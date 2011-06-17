@@ -1,4 +1,9 @@
-module Core where
+module Core (
+
+  Board(..), Player, Slot(..), Vitality, Result, Field(..), Card(..),
+  dead, alive
+
+  ) where
 
 import Control.Monad.Identity
 import Control.Monad.Error
