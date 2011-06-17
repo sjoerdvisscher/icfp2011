@@ -1,4 +1,4 @@
-module Logic where
+module Logic (Move(..), ApplyMode(..)) where
 
 import Control.Monad.Error
 import Control.Monad.State
