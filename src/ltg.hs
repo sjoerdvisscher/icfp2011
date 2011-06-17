@@ -55,8 +55,9 @@ main = do
 
 brains :: [(String, Brain)]
 brains =
-  [ ("nop",   nopBrain)
-  , ("stdin", stdinBrain)
+  [ ("nop",    nopBrain)
+  , ("stdin",  stdinBrain)
+  , ("mirror", mirrorBrain)
   ]
 
 report :: Board -> String

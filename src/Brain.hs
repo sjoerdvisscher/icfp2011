@@ -9,7 +9,7 @@ module Brain (
   simpleIOBrain, simpleBrain, 
 
   -- * Trivial brains
-  nopBrain, stdinBrain
+  nopBrain, stdinBrain, mirrorBrain
 
   ) where
 
@@ -54,3 +54,10 @@ stdinBrain = simpleIOBrain (const readMove)
         readApply "2" = FieldToCard
         readApply _   = error "readApply: Not valid ApplyMode"
 
+mirrorBrain :: Brain
+mirrorBrain = Brain
+  { playFirst  = return (nop, nextBrain) 
+  , playSecond = return nextBrain
+  }
+  where
+    nextBrain = NextBrain (\m _ -> return (m, nextBrain))
