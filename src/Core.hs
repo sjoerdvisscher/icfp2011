@@ -5,9 +5,10 @@ import Control.Monad.Error
 import Control.Monad.State
 
 data Board = Board
-  { applications :: Int
-  , proponent :: Player
-  , opponent :: Player
+  { zombieMode   :: Bool
+  , applications :: Int
+  , proponent    :: Player
+  , opponent     :: Player
   }
   deriving Show
 
