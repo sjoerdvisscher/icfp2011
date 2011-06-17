@@ -4,4 +4,4 @@ import Core
 import Logic
 
 -- | Suggest a move for the current proponent.
-type Brain = Board -> Move
+type Brain m = Board -> m Move
