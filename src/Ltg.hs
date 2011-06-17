@@ -1,22 +1,23 @@
 module Main where
 
 import Core
-import Cards
 import Logic
 
 import Control.Applicative
 import Control.Monad.Error
 import Control.Monad.Identity
 import Control.Monad.State
-import Data.Maybe
 
+main :: IO ()
 main = do
   putStrLn "Lambda: The Gathering, by Simons Fanboys"
   go emptyBoard 0
   where
+    go :: Board -> Int -> IO ()
     go s i = do
       putStrLn $ "Player #" ++ show i
       m <- readMove
+      print m
       case runIdentity $ runErrorT $ runStateT (step m) s of
         Right (rp, s') -> putStrLn rp >> go s' (1 - i)
         Left err       -> putStrLn err
@@ -31,7 +32,7 @@ report = do
   let slots = opponent board
   let pr (Slot (Card I) 10000, _) = ""
       pr tuple                    = show tuple ++ "\n"
-  return $ concatMap pr (zip slots [0..])
+  return $ concatMap pr (zip slots [0 :: Int ..])
 
 readMove :: IO Move
 readMove = parse <$> getLine <*> getLine <*> getLine
@@ -39,4 +40,5 @@ readMove = parse <$> getLine <*> getLine <*> getLine
     parse app ix card = Move (readApply app) (read ix) (read card)
     readApply "1" = CardToField
     readApply "2" = FieldToCard
+    readApply _   = error "readApply: Not valid ApplyMode"
 
