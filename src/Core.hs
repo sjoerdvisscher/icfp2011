@@ -35,7 +35,13 @@ data Field
   | Card Card
   | Papp1 Card Field
   | Papp2 Card Field Field
-  deriving Show
+
+instance Show Field where
+  show (Value x)     = show x
+  show (Card c)      = show c
+  show (Papp1 c x)   = show c ++ " (" ++ show x ++ ")"
+  show (Papp2 c x y) = show c ++ " (" ++ show x ++ ")"
+                              ++ " (" ++ show y ++ ")"
 
 data Card
   = I
