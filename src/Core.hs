@@ -1,7 +1,7 @@
 module Core (
 
-  -- * Vital datatypes
-  Board(..), Player, Slot(..), dead, alive,
+  -- * Vital datatypes and functions
+  Board(..), emptyBoard, Player, Slot(..), dead, alive,
   Vitality, Field(..), Card(..),
 
   -- * The Result monad
@@ -96,4 +96,9 @@ dead (Slot _ x) = x == -1 || x == 0
 
 alive :: Slot -> Bool
 alive = not . dead
+
+emptyBoard :: Board
+emptyBoard = Board { zombieMode = False, applications = 0, proponent = emptyPlayer, opponent = emptyPlayer }
+  where
+    emptyPlayer = replicate 255 (Slot (Card I) 10000)
 

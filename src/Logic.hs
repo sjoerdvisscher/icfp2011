@@ -1,15 +1,10 @@
-module Logic (emptyBoard, turn, Move(..), ApplyMode(..)) where
+module Logic (turn, Move(..), ApplyMode(..)) where
 
 import Control.Monad.Error
 import Control.Monad.State
 
 import Core
 import Cards
-
-emptyBoard :: Board
-emptyBoard = Board { zombieMode = False, applications = 0, proponent = emptyPlayer, opponent = emptyPlayer }
-  where
-    emptyPlayer = replicate 255 (Slot (Card I) 10000)
 
 data ApplyMode = CardToField | FieldToCard
   deriving Show

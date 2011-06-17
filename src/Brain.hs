@@ -30,3 +30,4 @@ playerBrain _ = readMove
         parse app ix card = Move (readApply app) (read ix) (read card)
         readApply "1" = CardToField
         readApply "2" = FieldToCard
+        readApply _   = error "readApply: Not valid ApplyMode"
