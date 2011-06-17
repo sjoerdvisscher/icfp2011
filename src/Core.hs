@@ -1,7 +1,11 @@
 module Core (
 
-  Board(..), Player, Slot(..), Vitality, Result, Field(..), Card(..),
-  dead, alive
+  -- * Vital datatypes
+  Board(..), Player, Slot(..), dead, alive,
+  Vitality, Field(..), Card(..),
+
+  -- * The Result monad
+  Result
 
   ) where
 
