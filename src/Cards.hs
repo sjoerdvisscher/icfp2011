@@ -7,8 +7,9 @@ import Control.Monad.State
 import Core
 
 getValue :: Field -> Result Int
-getValue (Value x) = return $ x
-getValue _         = throwError "Field is not a value"
+getValue (Value x)   = return x
+getValue (Card Zero) = return 0
+getValue f           = throwError $ "Field '" ++ show f ++ "' is not a value"
 
 apply :: Field -> Field -> Result Field
 apply (Value _)    _ = throwError "Value is not a function"
