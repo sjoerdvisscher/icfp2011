@@ -15,12 +15,11 @@ Library
   Exposed-Modules:  Brain,
                     Cards,
                     Core,
-                    Logic,
-                    Ltg
+                    Logic
   Hs-Source-Dirs:   src
 
 Executable ltg
-  Main-is:          Ltg.hs
+  Main-is:          ltg.hs
   Build-depends:    base >= 4 && < 5,
                     mtl >= 2.0.1 && < 2.2
   Hs-Source-Dirs:   src
