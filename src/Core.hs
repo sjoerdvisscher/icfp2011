@@ -106,5 +106,5 @@ alive = not . dead
 emptyBoard :: Board
 emptyBoard = Board { zombieMode = False, applications = 0, proponent = emptyPlayer, opponent = emptyPlayer }
   where
-    emptyPlayer = replicate 255 (Slot (Card I) 10000)
+    emptyPlayer = replicate 256 (Slot (Card I) 10000)
 

@@ -21,14 +21,26 @@ play b1 b2 = do
     go move board ply curr next = do
       print move
       let Right (rp, board') = runIdentity $ runErrorT $ runStateT (step move) board
-      putStrLn $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
-      (move', brain') <- nextMove curr move board'
-      putStr rp
-      go move' board' (succ ply) next brain'
+      if ply == 200000
+        then do
+             putStrLn "Game done after 100000 moves each."
+             putStrLn $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
+             putStrLn $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board)
+        else if all dead (opponent board)
+             then putStrLn $ "Player #" ++ show (ply `rem` 2) ++ " won!"
+             else if all dead (proponent board)
+                  then putStrLn $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
+                  else do
+                       putStrLn $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
+                       (move', brain') <- nextMove curr move board'
+                       putStr rp
+                       go move' board' (succ ply) next brain'
     step move = do
       mb <- turn move
       s <- report <$> get
       return $ maybe "" (++"\n") mb ++ s
+    score :: Player -> Int
+    score = length . filter alive
 
 main :: IO ()
 main = do
@@ -53,3 +65,4 @@ report board = concatMap pr (zip slots [0 :: Int ..])
     slots = opponent board
     pr (Slot (Card I) 10000, _) = ""
     pr tuple                    = show tuple ++ "\n"
+
