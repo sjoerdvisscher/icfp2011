@@ -48,7 +48,8 @@ execute (Move applyMode ix card) = do
         case applyMode of
           CardToField -> flip apply
           FieldToCard -> apply
-  let app (Slot f v) = do
+  let app s@(Slot f v) = do
+        when (dead s) $ throwError "Slot is dead"
         f' <- f `apply'` Card card
         return $ Slot f' v
   slots' <- changeM ix app slots
