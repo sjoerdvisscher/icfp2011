@@ -205,3 +205,4 @@ checkSlotIndex x
 
 getSlotIndex :: Field -> Result Int
 getSlotIndex f = getValue f >>= \i -> checkSlotIndex i >> return i
+
