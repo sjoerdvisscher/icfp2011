@@ -22,30 +22,64 @@ type Result = StateT Board (ErrorT String Identity)
 
 data Field
   = Value Int
-  | Function (Field -> Result Field)
+  | Card Card
+  | Papp1 Card Field
+  | Papp2 Card Field Field
+  deriving Show
 
-instance Show Field where
-  show (Value x)    = "Value " ++ show x
-  show (Function _) = "Function _"
+data Card
+  = I
+  | Zero
+  | Succ
+  | Dbl
+  | Get
+  | Put
+  | S
+  | K
+  | Inc
+  | Dec
+  | Attack
+  | Help
+  | Copy
+  | Revive
+  | Zombie
 
-getValue :: Field -> Result Int
-getValue (Value x) = return $ x
-getValue _         = throwError "Field is not a value"
+instance Show Card where
+  show I      = "I"
+  show Zero   = "zero"
+  show Succ   = "succ"
+  show Dbl    = "dbl"
+  show Get    = "get"
+  show Put    = "put"
+  show S      = "S"
+  show K      = "K"
+  show Inc    = "inc"
+  show Dec    = "dec"
+  show Attack = "attack"
+  show Help   = "help"
+  show Copy   = "copy"
+  show Revive = "revive"
+  show Zombie = "zombie"
 
-apply :: Field -> Field -> Result Field
-apply (Function f) x = do
-                       board <- get
-                       let apps = applications board + 1
-                       put $ board { applications = apps }
-                       when (apps == 1000)
-                         $ throwError "it's been a 1000 applications"
-                       f x
-apply _            _ = throwError "Field is not a function"
-
-slotNr :: Slot -> Maybe Int
-slotNr (Slot (Value x) _)
-  | 0 <= x && x <= 255    = Just x
-slotNr _                  = Nothing
+instance Read Card where
+  readsPrec _ = f
+    where
+      f "I"      = [(I, "")]
+      f "zero"   = [(Zero, "")]
+      f "succ"   = [(Succ, "")]
+      f "dbl"    = [(Dbl, "")]
+      f "get"    = [(Get, "")]
+      f "put"    = [(Put, "")]
+      f "S"      = [(S, "")]
+      f "K"      = [(K, "")]
+      f "inc"    = [(Inc, "")]
+      f "dec"    = [(Dec, "")]
+      f "attack" = [(Attack, "")]
+      f "help"   = [(Help, "")]
+      f "copy"   = [(Copy, "")]
+      f "revive" = [(Revive, "")]
+      f "zombie" = [(Zombie, "")]
+      f _        = []
 
 dead :: Slot -> Bool
 dead (Slot _ x) = x == -1 || x == 0
