@@ -38,9 +38,7 @@ slotNr (Slot (Value x) _)
 slotNr _                  = Nothing
 
 dead :: Slot -> Bool
-dead (Slot _ x)
-  | x == -1 || x == 0 = True
-dead _                = False
+dead (Slot _ x) = x == -1 || x == 0
 
 alive :: Slot -> Bool
 alive = not . dead
