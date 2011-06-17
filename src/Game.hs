@@ -51,10 +51,20 @@ dead _                = False
 alive :: Slot -> Bool
 alive = not . dead
 
--- Functions
-
 change :: Int -> (a -> a) -> [a] -> [a]
 change i f xs = take i xs ++ (f $ xs !! i) : drop (i + 1) xs
+
+checkSlotIndex :: Int -> Result ()
+checkSlotIndex x
+  | 0 <= x && x <= 255 = return ()
+  | otherwise          = throwError "slot index out of bounds"
+
+checkSlotAlive :: Slot -> Result ()
+checkSlotAlive s
+  | alive s   = return ()
+  | otherwise = throwError "slot is dead"
+
+-- Functions
 
 card :: String -> Field
 card = fromJust . (`lookup` cards)
@@ -65,17 +75,24 @@ cards =
  , ("zero", Value 0)
  , ("succ", Function (\n -> do
                             n' <- getValue n
-                            return $ Value $ n' + 1
+                            let m  = n' + 1
+                                m' = min m 65535
+                            return $ Value $ m'
                      ))
  , ("dbl",  Function (\n -> do
                             n' <- getValue n
-                            return $ Value $ n' * 2
+                            let m  = n' * 2
+                                m' = min m 65535
+                            return $ Value $ m'
                      ))
  , ("get",  Function (\i -> do
                             board <- get
                             let slots = proponent board
                             i' <- getValue i
-                            return $ field $ slots !! i'
+                            checkSlotIndex i'
+                            let s = slots !! i'
+                            checkSlotAlive s
+                            return $ field s
                      ))
  , ("put",  Function (\_ -> return $ card "I"))
  , ("S",    Function (\f -> return $ Function
@@ -89,8 +106,11 @@ cards =
   , ("K",   Function (\x -> return $ Function (\_ -> return x)))
   , ("inc", Function (\i -> do
                             i' <- getValue i
+                            checkSlotIndex i'
                             board <- get
-                            let inc (Slot f v) = Slot f (v + 1)
+                            let inc (Slot f v)
+                                  | v > 0 && v < 65535 = Slot f (v + 1)
+                                  | otherwise          = Slot f v
                             let slots = proponent board
                             let slots' = change i' inc slots
                             put $ board { proponent = slots' }
