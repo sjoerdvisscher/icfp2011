@@ -4,7 +4,11 @@ import Control.Monad.Identity
 import Control.Monad.Error
 import Control.Monad.State
 
-data Board = Board { proponent :: Player, opponent :: Player }
+data Board = Board
+  { applications :: Int
+  , proponent :: Player
+  , opponent :: Player
+  }
   deriving Show
 
 type Player = [Slot]
@@ -29,7 +33,13 @@ getValue (Value x) = return $ x
 getValue _         = throwError "Field is not a value"
 
 apply :: Field -> Field -> Result Field
-apply (Function f) x = f x
+apply (Function f) x = do
+                       board <- get
+                       let apps = applications board + 1
+                       put $ board { applications = apps }
+                       when (apps == 1000)
+                         $ throwError "it's been a 1000 applications"
+                       f x
 apply _            _ = throwError "Field is not a function"
 
 slotNr :: Slot -> Maybe Int
