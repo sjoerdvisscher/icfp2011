@@ -1,0 +1,20 @@
+Name:                qltg
+Version:             0.1
+Synopsis:            ICFP 2011
+License:             BSD3
+License-file:        LICENSE
+Author:              Tom Lokhorst,
+                     Sjoerd Visscher
+Maintainer:          tom@lokhorst.eu
+Category:            Game
+Build-type:          Simple
+Cabal-version:       >=1.2
+
+
+Executable ltg
+  Main-is:             Ltg.hs
+  Other-modules:       Game
+  Build-depends:       base >= 4 && < 5,
+                       mtl >= 2.0.1 && < 2.2
+  Hs-Source-Dirs:      src
+  
