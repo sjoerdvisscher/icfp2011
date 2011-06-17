@@ -12,7 +12,6 @@ data Field
   | Function Card
   deriving Show
 
-
 slotNr :: Slot -> Maybe Int
 slotNr (Slot (Value x) _)
   | 0 <= x && x <= 255    = Just x
