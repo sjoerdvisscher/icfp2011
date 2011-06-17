@@ -53,6 +53,9 @@ alive = not . dead
 
 -- Functions
 
+change :: Int -> (a -> a) -> [a] -> [a]
+change i f xs = take i xs ++ (f $ xs !! i) : drop (i + 1) xs
+
 card :: String -> Field
 card = fromJust . (`lookup` cards)
 
@@ -62,15 +65,18 @@ cards =
  , ("zero", Value 0)
  , ("succ", Function (\n -> do
                             n' <- getValue n
-                            return $ Value $ n' + 1))
+                            return $ Value $ n' + 1
+                     ))
  , ("dbl",  Function (\n -> do
                             n' <- getValue n
-                            return $ Value $ n' * 2))
+                            return $ Value $ n' * 2
+                     ))
  , ("get",  Function (\i -> do
-                            b <- get
-                            let f = proponent b
+                            board <- get
+                            let slots = proponent board
                             i' <- getValue i
-                            return $ field $ f !! i'))
+                            return $ field $ slots !! i'
+                     ))
  , ("put",  Function (\_ -> return $ card "I"))
  , ("S",    Function (\f -> return $ Function
                      (\g -> return $ Function
@@ -78,6 +84,17 @@ cards =
                             h <- f `apply` x
                             y <- g `apply` x
                             z <- h `apply` y
-                            return z))))
+                            return z
+                     ))))
+  , ("K",   Function (\x -> return $ Function (\_ -> return x)))
+  , ("inc", Function (\i -> do
+                            i' <- getValue i
+                            board <- get
+                            let inc (Slot f v) = Slot f (v + 1)
+                            let slots = proponent board
+                            let slots' = change i' inc slots
+                            put $ board { proponent = slots' }
+                            return $ card "I"
+                     ))
   ]
 
