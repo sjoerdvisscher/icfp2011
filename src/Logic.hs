@@ -17,6 +17,13 @@ data ApplyMode = CardToField | FieldToCard
 data Move = Move ApplyMode Int Card
   deriving Show
 
+turn :: Move -> Result (Maybe String)
+turn m = do
+  preTurn
+  r <- (execute m >> return Nothing) `catchError` (return . Just)
+  modify (\b -> b { opponent = proponent b, proponent = opponent b })
+  return r
+
 preTurn :: Result ()
 preTurn = do
   board <- get
@@ -46,3 +53,4 @@ execute (Move applyMode ix card) = do
         return $ Slot f' v
   slots' <- changeM ix app slots
   put $ board { proponent = slots' }
+
