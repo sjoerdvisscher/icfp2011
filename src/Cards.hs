@@ -46,6 +46,11 @@ apply f x = do
     Papp2 Help i j   -> f_help i j x
     fld              -> error $ "Can't apply to field: " ++ show fld
 
+add :: Board -> Int -> Slot -> Slot
+add b n s@(Slot f v)
+  | dead s    = s
+  | otherwise = Slot f $ max 0 $ min 65535 $ if zombieMode b then v - n else v + n
+
 f_I :: Monad m => a -> m a
 f_I = \x -> return x
 
@@ -94,11 +99,8 @@ f_inc :: Field -> StateT Board (ErrorT String Identity) Field
 f_inc = \i -> do
   i' <- getSlotIndex i
   board <- get
-  let inc (Slot f v)
-        | v > 0 && v < 65535 = Slot f (v + 1)
-        | otherwise          = Slot f v
   let slots = proponent board
-  slots' <- change i' inc slots
+  slots' <- change i' (add board 1) slots
   put $ board { proponent = slots' }
   return $ Card I
 
@@ -106,11 +108,8 @@ f_dec :: Field -> StateT Board (ErrorT String Identity) Field
 f_dec = \i -> do
   i' <- getSlotIndex i
   board <- get
-  let dec (Slot f v)
-        | v > 0     = Slot f (v - 1)
-        | otherwise = Slot f v
   let slots = opponent board
-  slots' <- change (255 - i') dec slots
+  slots' <- change (255 - i') (add board (-1)) slots
   put $ board { opponent = slots' }
   return $ Card I
 
@@ -131,11 +130,8 @@ f_attack = \i j n -> do
   let board' = board { proponent = proponentSlots' }
   put board'
   j' <- getSlotIndex j
-  let subN' s@(Slot f v)
-        | dead s    = s
-        | otherwise = Slot f $ max 0 (v - n' * 9 `div` 10)
   let opponentSlots = opponent board'
-  opponentSlots' <- change (255 - j') subN' opponentSlots
+  opponentSlots' <- change (255 - j') (add board' ((-n') * 9 `div` 10)) opponentSlots
   put $ board' { opponent = opponentSlots' }
   return $ Card I
 
@@ -156,10 +152,7 @@ f_help = \i j n -> do
   let board' = board { proponent = proponentSlots' }
   put board'
   j' <- getSlotIndex j
-  let addN' s@(Slot f v)
-        | dead s    = s
-        | otherwise = Slot f $ min 65535 (v + n' * 11 `div` 10)
-  proponentSlots'' <- change j' addN' proponentSlots'
+  proponentSlots'' <- change j' (add board' (n' * 11 `div` 10)) proponentSlots'
   put $ board' { proponent = proponentSlots'' }
   return $ Card I
 
