@@ -4,7 +4,8 @@ Synopsis:            ICFP 2011
 License:             BSD3
 License-file:        LICENSE
 Author:              Tom Lokhorst,
-                     Sjoerd Visscher
+                     Sjoerd Visscher,
+                     Martijn van Steenbergen
 Maintainer:          tom@lokhorst.eu
 Category:            Game
 Build-type:          Simple
