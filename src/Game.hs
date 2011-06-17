@@ -64,10 +64,8 @@ checkSlotIndex x
   | 0 <= x && x <= 255 = return ()
   | otherwise          = throwError "slot index out of bounds"
 
-checkSlotAlive :: Slot -> Result ()
-checkSlotAlive s
-  | alive s   = return ()
-  | otherwise = throwError "slot is dead"
+getSlotIndex :: Field -> Result Int
+getSlotIndex f = getValue f >>= \i -> checkSlotIndex i >> return i
 
 -- Functions
 
@@ -91,13 +89,13 @@ cards =
                                return $ Value $ m'
                         ))
  , ("get",     Function (\i -> do
+                               i' <- getSlotIndex i
                                board <- get
                                let slots = proponent board
-                               i' <- getValue i
-                               checkSlotIndex i'
-                               let s = slots !! i'
-                               checkSlotAlive s
-                               return $ field s
+                               let slot = slots !! i'
+                               when (dead slot) 
+                                 $ throwError "Slot is dead"
+                               return $ field slot
                         ))
  , ("put",     Function (\_ -> return $ card "I"))
  , ("S",       Function (\f -> return $ Function
@@ -110,8 +108,7 @@ cards =
                         ))))
   , ("K",      Function (\x -> return $ Function (\_ -> return x)))
   , ("inc",    Function (\i -> do
-                               i' <- getValue i
-                               checkSlotIndex i'
+                               i' <- getSlotIndex i
                                board <- get
                                let inc (Slot f v)
                                      | v > 0 && v < 65535 = Slot f (v + 1)
@@ -122,8 +119,7 @@ cards =
                                return $ card "I"
                         ))
   , ("dec",    Function (\i -> do
-                               i' <- getValue i
-                               checkSlotIndex i'
+                               i' <- getSlotIndex i
                                board <- get
                                let dec (Slot f v)
                                      | v > 0     = Slot f (v - 1)
@@ -136,8 +132,7 @@ cards =
   , ("attack", Function (\i -> return $ Function
                         (\j -> return $ Function
                         (\n -> do
-                               i' <- getValue i
-                               checkSlotIndex i'
+                               i' <- getSlotIndex i
                                n' <- getValue n
                                board <- get
                                let subN (Slot f v)
@@ -147,15 +142,65 @@ cards =
                                proponentSlots' <- changeM i' subN proponentSlots
                                let board' = board { proponent = proponentSlots' }
                                put board'
-                               j' <- getValue j
-                               checkSlotIndex j'
+                               j' <- getSlotIndex j
                                let subN' s@(Slot f v)
                                      | dead s    = s
                                      | otherwise = Slot f $ max 0 (v - n' * 9 `div` 10)
-                               let opponentSlots = opponent board
+                               let opponentSlots = opponent board'
                                opponentSlots' <- change (255 - j') subN' opponentSlots
                                put $ board' { opponent = opponentSlots' }
                                return $ card "I"
                          ))))
+  , ("help",   Function (\i -> return $ Function
+                        (\j -> return $ Function
+                        (\n -> do
+                               i' <- getSlotIndex i
+                               n' <- getValue n
+                               board <- get
+                               let subN (Slot f v)
+                                     | v - n' < 0 = throwError "Not enough vitality for help"
+                                     | otherwise  = return $ Slot f (v - n')
+                               let proponentSlots = proponent board
+                               proponentSlots' <- changeM i' subN proponentSlots
+                               let board' = board { proponent = proponentSlots' }
+                               put board'
+                               j' <- getSlotIndex j
+                               let addN' s@(Slot f v)
+                                     | dead s    = s
+                                     | otherwise = Slot f $ min 65535 (v + n' * 11 `div` 10)
+                               proponentSlots'' <- change j' addN' proponentSlots'
+                               put $ board' { proponent = proponentSlots'' }
+                               return $ card "I"
+                         ))))
+  , ("copy",    Function (\i -> do
+                                i' <- getSlotIndex i
+                                board <- get
+                                let slots = opponent board
+                                return $ field $ slots !! i'
+                ))
+  , ("revive",  Function (\i -> do
+                                i' <- getSlotIndex i
+                                board <- get
+                                let slots = proponent board
+                                    slot  = slots !! i'
+                                when (dead slot) $ do
+                                  let revive (Slot f _) = Slot f 1
+                                  slots' <- change i' revive slots
+                                  put $ board { proponent = slots' }
+                                return $ card "I"
+                ))
+  , ("zombie",  Function (\i -> return $ Function
+                         (\x -> do
+                                i' <- getSlotIndex i
+                                board <- get
+                                let slots = opponent board
+                                    slot  = slots !! i'
+                                when (alive slot)
+                                  $ throwError "It's alive!!! not a zombie"
+                                let zombie _ = Slot x (-1)
+                                slots' <- change (255 - i') zombie slots
+                                put $ board { opponent = slots' }
+                                return $ card "I"
+                )))
   ]
 
