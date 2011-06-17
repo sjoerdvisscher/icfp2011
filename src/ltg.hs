@@ -3,6 +3,7 @@ module Main where
 import Core
 import Cards
 import Logic
+import Brain
 
 import Control.Applicative
 import Control.Monad.Error
@@ -14,29 +15,20 @@ main = do
   putStrLn "Lambda: The Gathering, by Simons Fanboys"
   go emptyBoard 0
   where
-    go s i = do
+    go board i = do
       putStrLn $ "Player #" ++ show i
-      m <- readMove
-      case runIdentity $ runErrorT $ runStateT (step m) s of
+      move <- playerBrain board
+      case runIdentity $ runErrorT $ runStateT (step move) board of
         Right (rp, s') -> putStrLn rp >> go s' (1 - i)
         Left err       -> putStrLn err
-    step m = do
-      mb <- turn m
-      s <- report
+    step move = do
+      mb <- turn move
+      s <- report <$> get
       return $ maybe "" (++"\n") mb ++ s
 
-report :: Result String
-report = do
-  board <- get
-  let slots = opponent board
-  let pr (Slot (Card I) 10000, _) = ""
-      pr tuple                    = show tuple ++ "\n"
-  return $ concatMap pr (zip slots [0..])
-
-readMove :: IO Move
-readMove = parse <$> getLine <*> getLine <*> getLine
+report :: Board -> String
+report board = concatMap pr (zip slots [0..])
   where
-    parse app ix card = Move (readApply app) (read ix) (read card)
-    readApply "1" = CardToField
-    readApply "2" = FieldToCard
-
+    slots = opponent board
+    pr (Slot (Card I) 10000, _) = ""
+    pr tuple                    = show tuple ++ "\n"
