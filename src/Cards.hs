@@ -6,8 +6,6 @@ import Control.Monad.State
 
 import Core
 
-type Card = Field
-
 getValue :: Field -> Result Int
 getValue (Value x) = return $ x
 getValue _         = throwError "Field is not a value"

@@ -1,2 +1,2 @@
 run:
-	ghci -isrc Cards
+	ghci -isrc Ltg
