@@ -17,7 +17,7 @@ main = do
     go :: Board -> Int -> IO ()
     go board i = do
       putStrLn $ "Player #" ++ show i
-      move <- playerBrain board
+      move <- fst <$> playFirst stdinBrain
       print move
       case runIdentity $ runErrorT $ runStateT (step move) board of
         Right (rp, s') -> putStrLn rp >> go s' (1 - i)

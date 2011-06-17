@@ -1,10 +1,15 @@
+{-# LANGUAGE TupleSections #-}
+
 module Brain (
 
   -- * The Brain type
-  Brain,
+  Brain(..), NextBrain(..),
+
+  -- * Brain constructors
+  simpleIOBrain, simpleBrain, 
 
   -- * Trivial brains
-  nop, playerBrain
+  nopBrain, stdinBrain
 
   ) where
 
@@ -13,16 +18,33 @@ import Logic
 
 import Control.Applicative
 
--- | Suggest a move for the current proponent.
-type Brain m = Board -> m Move
+data Brain = Brain
+  { playFirst  :: IO (Move, NextBrain)
+  , playSecond :: IO NextBrain
+  }
+
+data NextBrain = NextBrain
+  { nextMove :: Move -> Board -> IO (Move, NextBrain)
+  }
+
+simpleIOBrain :: (Board -> IO Move) -> Brain
+simpleIOBrain f = Brain ((, nextBrain) <$> f emptyBoard) (return nextBrain)
+  where
+    nextBrain = NextBrain (\_ board -> (, nextBrain) <$> f board)
+
+simpleBrain :: (Board -> Move) -> Brain
+simpleBrain f = simpleIOBrain (return . f)
 
 -- | The brain that always suggests @Move CardToField 0 I@.
-nop :: Monad m => Brain m
-nop _ = return (Move CardToField 0 I)
+nopBrain :: Brain
+nopBrain = simpleBrain (const nop)
+
+nop :: Move
+nop = Move CardToField 0 I
 
 -- | The brain that reads moves from stdin.
-playerBrain :: Brain IO
-playerBrain _ = readMove
+stdinBrain :: Brain
+stdinBrain = simpleIOBrain (const readMove)
   where
     readMove :: IO Move
     readMove = parse <$> getLine <*> getLine <*> getLine
@@ -31,3 +53,4 @@ playerBrain _ = readMove
         readApply "1" = CardToField
         readApply "2" = FieldToCard
         readApply _   = error "readApply: Not valid ApplyMode"
+
