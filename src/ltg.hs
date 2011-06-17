@@ -11,7 +11,7 @@ import Control.Monad.State
 
 main :: IO ()
 main = do
-  putStrLn "Lambda: The Gathering, by Simons Fanboys"
+  putStrLn "Lambda: The Gathering, by Magic Missiles"
   go emptyBoard 0
   where
     go :: Board -> Int -> IO ()
