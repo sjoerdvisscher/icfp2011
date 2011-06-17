@@ -1,5 +1,5 @@
 run:
-	ghci -isrc Ltg
+	ghci -isrc Brain
 
 clean:
 	cabal clean
