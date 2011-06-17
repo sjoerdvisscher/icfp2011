@@ -1,4 +1,4 @@
-module Game where
+module Core where
 
 import Data.Maybe
 import Control.Monad.Identity
