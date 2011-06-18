@@ -1,6 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 
 module MonadBrain (
 
@@ -14,7 +15,7 @@ module MonadBrain (
   toBrain,
 
   -- * Breakpoints
-  break
+  break, stepwise
 
   ) where
 
@@ -88,7 +89,11 @@ toNextBrain (B (FreeT (ReaderT f))) =
 -- Breakpoints
 
 -- | Insert a breakpoint.
-break :: B ()
+break :: MonadIO m => m ()
 break = liftIO $ do
   hPutStrLn stderr "Breakpoint hit. Press <Enter> to continue."
   void getLine
+
+-- | Insert a breakpoints around every move in the given brain.
+stepwise :: B a -> B a
+stepwise (B b) = B (mapFreeT (break >>) b)
