@@ -70,9 +70,11 @@ brainFromMoves ms = Brain
     next (m:ms) = NextBrain (\_ _ -> return (m, next ms))
 
 loopBrain :: Brain
-loopBrain = brainFromMoves ( Move FieldToCard 0 S
-                           : Move FieldToCard 0 Get
-                           : Move FieldToCard 0 I
-                           : repeat (Move FieldToCard 0 Zero)
-                           )
+loopBrain = brainFromMoves $ cycle $ concat $ map f [0..255]
+  where
+    f i = [ Move FieldToCard i S
+          , Move FieldToCard i Get
+          , Move FieldToCard i I
+          , Move FieldToCard 0 Zero
+          ]
 
