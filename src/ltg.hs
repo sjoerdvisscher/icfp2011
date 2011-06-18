@@ -32,13 +32,15 @@ play b1 b2 first debug = do
       let Right (rp, board') = runIdentity $ runErrorT $ runStateT (step move) board
       if ply == 200000
         then do
-             when (debug) $ hPutStrLn stderr "Game done after 100000 moves each."
-             when (debug) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
-             when (debug) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board)
+             when (True) $ hPutStrLn stderr "Game done after 100000 moves each."
+             when (True) $ hPutStrLn stderr $ report $ proponent board'
+             when (True) $ hPutStrLn stderr $ report $ opponent board'
+             when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
+             when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board')
         else if all dead (opponent board)
-             then when (debug) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
+             then when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
              else if all dead (proponent board)
-                  then when (debug) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
+                  then when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
                        when (debug) $ hPutStr stderr rp
                        when (debug) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
@@ -46,7 +48,7 @@ play b1 b2 first debug = do
                        go move' board' (succ ply) next brain'
     step move = do
       mb <- turn move
-      s <- report <$> get
+      s <- (report . opponent) <$> get
       return $ maybe "" (++"\n") mb ++ s
     score :: Player -> Int
     score = length . filter alive
@@ -59,7 +61,7 @@ main = do
     []                   -> play stdinBrain  stdinBrain  True  True
     [Left "0"]           -> play sjoerdBrain stdinBrain  True  False
     [Left "1"]           -> play stdinBrain  sjoerdBrain False False
-    [Right b1, Right b2] -> play b1          b2          True  True
+    [Right b1, Right b2] -> play b1          b2          True  False
     _                    -> do
       hPutStrLn stderr "Usage: ltg <brain> <brain>"
       hPutStrLn stderr $ "  where  brain `elem` " ++ show (map fst brains) 
@@ -77,10 +79,9 @@ brains =
   , ("sjoerd", sjoerdBrain)
   ]
 
-report :: Board -> String
-report board = concatMap pr (zip slots [0 :: Int ..])
+report :: [Slot] -> String
+report slots = concatMap pr (zip slots [0 :: Int ..])
   where
-    slots = opponent board
     pr (Slot (Card I) 10000, _) = ""
     pr (slot, i)                = "[" ++ show i ++ "] " ++ show slot ++ "\n"
 
