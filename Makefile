@@ -28,3 +28,8 @@ profile: clean
 	cabal build
 	dist/build/ltg/ltg nop stdin +RTS -p -hc -sltg.summary < tests/loop.ltg
 	hp2ps ltg.hp
+
+test: build
+	cp dist/build/ltg/ltg run
+	time ./run mirror mirror > /dev/null
+
