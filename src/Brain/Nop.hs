@@ -7,11 +7,3 @@ import Brain
 nopBrain :: Brain
 nopBrain = simpleBrain (const nop)
 
-brainFromMoves :: [Move] -> Brain
-brainFromMoves ms = Brain
-                      (return (head ms, next (tail ms)))
-                      (return (next ms))
-  where
-    next (m:ms') = NextBrain (\_ _ -> return (m, next ms'))
-    next []      = error "brainFromMoves: empty list"
-
