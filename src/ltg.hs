@@ -60,7 +60,7 @@ main = do
     []                   -> play stdinBrain  stdinBrain  True  True
     [Left "0"]           -> play sjoerdBrain stdinBrain  True  False
     [Left "1"]           -> play stdinBrain  sjoerdBrain False False
-    [Right b1, Right b2] -> play b1          b2          True  True
+    [Right b1, Right b2] -> play b1          b2          True  False
     _                    -> do
       hPutStrLn stderr "Usage: ltg <brain> <brain>"
       hPutStrLn stderr $ "  where  brain `elem` " ++ show (map fst brains) 
