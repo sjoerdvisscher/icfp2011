@@ -3,6 +3,7 @@ module Cards (apply, change, changeM) where
 import Control.Monad.Identity
 import Control.Monad.Error
 import Control.Monad.State
+import qualified Data.Vector as V
 
 import Core
 
@@ -72,7 +73,7 @@ f_get = \i -> do
   i' <- getSlotIndex i
   board <- get
   let slots = proponent board
-  let slot = slots !! i'
+  let slot = slots V.! i'
   when (dead slot) 
     $ throwError "Slot is dead"
   return $ field slot
@@ -160,14 +161,14 @@ f_copy = \i -> do
   i' <- getSlotIndex i
   board <- get
   let slots = opponent board
-  return $ field $ slots !! i'
+  return $ field $ slots V.! i'
 
 f_revive :: Field -> StateT Board (ErrorT String Identity) Field
 f_revive = \i -> do
   i' <- getSlotIndex i
   board <- get
   let slots = proponent board
-      slot  = slots !! i'
+      slot  = slots V.! i'
   when (dead slot) $ do
     let revive (Slot f _) = Slot f 1
     slots' <- change i' revive slots
@@ -180,7 +181,7 @@ f_zombie = \i x -> do
   i' <- getSlotIndex i
   board <- get
   let slots = opponent board
-      slot  = slots !! i'
+      slot  = slots V.! i'
   when (alive slot)
     $ throwError "It's alive!!! not a zombie"
   let zombie _ = Slot x (-1)
@@ -190,12 +191,12 @@ f_zombie = \i x -> do
 
 -- Helper functions
 
-changeM :: Monad m => Int -> (a -> m a) -> [a] -> m [a]
-changeM i f xs = do
-  y <- f $ xs !! i
-  return $ take i xs ++ y : drop (i + 1) xs
+changeM :: Monad m => Int -> (a -> m a) -> V.Vector a -> m (V.Vector a)
+changeM i f vec = do
+  y <- f $ vec V.! i
+  return $ V.unsafeUpd vec [(i, y)]
 
-change :: Monad m => Int -> (a -> a) -> [a] -> m [a]
+change :: Monad m => Int -> (a -> a) -> V.Vector a -> m (V.Vector a)
 change i f = changeM i (return . f)
 
 checkSlotIndex :: Int -> Result ()

@@ -12,6 +12,7 @@ module Core (
 import Control.Monad.Identity
 import Control.Monad.Error
 import Control.Monad.State
+import qualified Data.Vector as V
 
 data Board = Board
   { zombieMode   :: Bool
@@ -21,7 +22,7 @@ data Board = Board
   }
   deriving Show
 
-type Player = [Slot]
+type Player = V.Vector Slot
 
 data Slot = Slot { field :: Field, vitality :: Vitality }
 
@@ -108,5 +109,5 @@ alive = not . dead
 emptyBoard :: Board
 emptyBoard = Board { zombieMode = False, applications = 0, proponent = emptyPlayer, opponent = emptyPlayer }
   where
-    emptyPlayer = replicate 256 (Slot (Card I) 10000)
+    emptyPlayer = V.replicate 256 (Slot (Card I) 10000)
 
