@@ -1,4 +1,4 @@
-module Logic (turn, Move(..), ApplyMode(..)) where
+module Logic (turn, Move(..), ApplyMode(..), nop) where
 
 import Control.Monad.Error
 import Control.Monad.State
@@ -11,6 +11,9 @@ data ApplyMode = CardToField | FieldToCard
 
 data Move = Move ApplyMode Int Card
   deriving Show
+
+nop :: Move
+nop = Move CardToField 0 I
 
 turn :: Move -> Result (Maybe String)
 turn m = do

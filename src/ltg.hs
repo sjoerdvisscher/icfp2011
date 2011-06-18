@@ -4,6 +4,10 @@ import Core
 import Logic
 import Brain
 import Brain.Loop
+import Brain.Mirror
+import Brain.Nop
+import Brain.NopReturn
+import Brain.Stdin
 import Brain.Sjoerd
 
 import Control.Applicative
@@ -64,6 +68,7 @@ main = do
 brains :: [(String, Brain)]
 brains =
   [ ("nop",    nopBrain)
+  , ("nopret", nopReturnBrain)
   , ("stdin",  stdinBrain)
   , ("mirror", mirrorBrain)
   , ("loop",   loopBrain)
