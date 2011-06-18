@@ -9,7 +9,7 @@ module Brain (
   simpleIOBrain, simpleBrain, 
 
   -- * Trivial brains
-  nopBrain, stdinBrain, mirrorBrain
+  nopBrain, stdinBrain, mirrorBrain, loopBrain
 
   ) where
 
@@ -60,3 +60,18 @@ mirrorBrain = Brain
   }
   where
     nextBrain = NextBrain (\m _ -> return (m, nextBrain))
+
+brainFromMoves :: [Move] -> Brain
+brainFromMoves ms = Brain
+                      (return (head ms, next (tail ms)))
+                      (return (next ms))
+  where
+    next (m:ms) = NextBrain (\_ _ -> return (m, next ms))
+
+loopBrain :: Brain
+loopBrain = brainFromMoves ( Move FieldToCard 0 S
+                           : Move FieldToCard 0 Get
+                           : Move FieldToCard 0 I
+                           : repeat (Move FieldToCard 0 Zero)
+                           )
+
