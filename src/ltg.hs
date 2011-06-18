@@ -3,6 +3,7 @@ module Main where
 import Core
 import Logic
 import Brain
+import Brain.Loop
 
 import Control.Applicative
 import Control.Monad.Error
@@ -79,7 +80,9 @@ writeMove (Move CardToField i c) = do
   putStrLn "1"
   print c
   print i
+  hFlush stdout
 writeMove (Move FieldToCard i c) = do
   putStrLn "2"
   print i
   print c
+  hFlush stdout
