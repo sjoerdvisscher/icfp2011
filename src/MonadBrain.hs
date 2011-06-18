@@ -40,7 +40,11 @@ instance MonadIO B where
 
 instance MonadReader (Maybe Move, Board) B where
   ask = B (lift ask)
-  local f (B g) = B (mapFreeT (local f) g)
+  local f = mapB (mapFreeT (local f))
+
+mapB :: (FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a ->
+  FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a) -> B a -> B a
+mapB f (B b) = B (f b)
 
 -- | Execute a move and wait for the opponent to move before continuing.
 move :: Move -> B ()
@@ -96,4 +100,4 @@ break = liftIO $ do
 
 -- | Insert a breakpoints around every move in the given brain.
 stepwise :: B a -> B a
-stepwise (B b) = B (mapFreeT (break >>) b)
+stepwise = mapB (mapFreeT (break >>))
