@@ -35,7 +35,6 @@ apply :: SlotNr -> SlotNr -> B ()
 apply func arg = do
   composeCard func Get
   applyInt func arg
-  applyFieldToCard func Zero
 
 -- | Applies function in slot to value x, replacing slot with value
 applyInt :: SlotNr -> Int -> B ()
@@ -68,3 +67,4 @@ atVital f 256 = atVital f 0
 atVital f slot = do
   v <- vitality slot
   if (v < 100) then atVital f (slot + 1) else f slot
+

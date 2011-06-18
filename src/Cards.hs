@@ -181,7 +181,7 @@ f_zombie = \i x -> do
   i' <- getSlotIndex i
   board <- get
   let slots = opponent board
-      slot  = slots V.! i'
+      slot  = slots V.! (255 - i')
   when (alive slot)
     $ throwError "It's alive!!! not a zombie"
   let zombie _ = Slot x (-1)
