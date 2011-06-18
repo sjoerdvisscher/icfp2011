@@ -1,7 +1,7 @@
 module Core (
 
   -- * Vital datatypes and functions
-  Board(..), emptyBoard, Player, Slot(..), dead, alive,
+  Board(..), emptyBoard, Player, Slot(..), SlotNr, dead, alive,
   Vitality, Field(..), Card(..),
 
   -- * The Result monad
@@ -28,6 +28,9 @@ data Slot = Slot { field :: Field, vitality :: Vitality }
 
 instance Show Slot where
   show (Slot f v) = show f ++ "   {" ++ show v ++ "}"
+
+-- | Index of slot between 0 and 255
+type SlotNr = Int
 
 type Vitality = Int
 
