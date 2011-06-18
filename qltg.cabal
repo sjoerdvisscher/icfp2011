@@ -15,11 +15,13 @@ Library
   Exposed-Modules:  Brain,
                     Cards,
                     Core,
-                    Logic
+                    Logic,
+                    MonadBrain
   Hs-Source-Dirs:   src
 
 Executable ltg
   Main-is:          ltg.hs
   Build-depends:    base >= 4 && < 5,
-                    mtl >= 2.0.1 && < 2.2
+                    mtl >= 2.0.1 && < 2.2,
+                    control-monad-free >= 0.5.3 && < 0.6
   Hs-Source-Dirs:   src
