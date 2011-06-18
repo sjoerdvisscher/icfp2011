@@ -8,9 +8,6 @@ module Brain (
   -- * Brain constructors
   simpleIOBrain, simpleBrain, brainFromMoves,
 
-  -- * Trivial brains
-  nopBrain
-
   ) where
 
 import Core
@@ -34,10 +31,6 @@ simpleIOBrain f = Brain ((, nextBrain) <$> f emptyBoard) (return nextBrain)
 
 simpleBrain :: (Board -> Move) -> Brain
 simpleBrain f = simpleIOBrain (return . f)
-
--- | The brain that always suggests @Move CardToField 0 I@.
-nopBrain :: Brain
-nopBrain = simpleBrain (const nop)
 
 brainFromMoves :: [Move] -> Brain
 brainFromMoves ms = Brain

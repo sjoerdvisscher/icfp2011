@@ -5,6 +5,7 @@ import Logic
 import Brain
 import Brain.Loop
 import Brain.Mirror
+import Brain.Nop
 import Brain.Stdin
 
 import Control.Applicative
