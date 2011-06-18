@@ -55,8 +55,8 @@ main = do
     [Left "1"]           -> play stdinBrain  mirrorBrain False
     [Right b1, Right b2] -> play b1 b2 True
     _                    -> do
-      putStrLn "Usage: ltg <brain> <brain>"
-      putStrLn $ "  where  brain `elem` " ++ show (map fst brains) 
+      hPutStrLn stderr "Usage: ltg <brain> <brain>"
+      hPutStrLn stderr $ "  where  brain `elem` " ++ show (map fst brains) 
   where
     eitherLookup e as = maybe (Left e) Right $ lookup e as
 
