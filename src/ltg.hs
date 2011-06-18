@@ -3,6 +3,7 @@ module Main where
 import Core
 import Logic
 import Brain
+import Brain.Loop
 
 import Control.Applicative
 import Control.Monad.Error
@@ -54,8 +55,8 @@ main = do
     [Left "1"]           -> play stdinBrain  mirrorBrain False
     [Right b1, Right b2] -> play b1 b2 True
     _                    -> do
-      putStrLn "Usage: ltg <brain> <brain>"
-      putStrLn $ "  where  brain `elem` " ++ show (map fst brains) 
+      hPutStrLn stderr "Usage: ltg <brain> <brain>"
+      hPutStrLn stderr $ "  where  brain `elem` " ++ show (map fst brains) 
   where
     eitherLookup e as = maybe (Left e) Right $ lookup e as
 
@@ -79,7 +80,9 @@ writeMove (Move CardToField i c) = do
   putStrLn "1"
   print c
   print i
+  hFlush stdout
 writeMove (Move FieldToCard i c) = do
   putStrLn "2"
   print i
   print c
+  hFlush stdout

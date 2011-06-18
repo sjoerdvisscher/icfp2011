@@ -6,10 +6,10 @@ module Brain (
   Brain(..), NextBrain(..),
 
   -- * Brain constructors
-  simpleIOBrain, simpleBrain, 
+  simpleIOBrain, simpleBrain, brainFromMoves,
 
   -- * Trivial brains
-  nopBrain, stdinBrain, mirrorBrain, loopBrain
+  nopBrain, stdinBrain, mirrorBrain
 
   ) where
 
@@ -68,13 +68,3 @@ brainFromMoves ms = Brain
   where
     next (m:ms') = NextBrain (\_ _ -> return (m, next ms'))
     next []      = error "brainFromMoves: empty list"
-
-loopBrain :: Brain
-loopBrain = brainFromMoves $ cycle $ concat $ map f [0..255]
-  where
-    f i = [ Move FieldToCard i S
-          , Move FieldToCard i Get
-          , Move FieldToCard i I
-          , Move FieldToCard 0 Zero
-          ]
-
