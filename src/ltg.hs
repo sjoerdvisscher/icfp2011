@@ -38,9 +38,9 @@ play b1 b2 first debug = do
              when (True) $ hPutStrLn stderr $ report $ opponent board'
              when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
              when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board')
-        else if all dead (opponent board)
+        else if V.all dead (opponent board)
              then when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
-             else if all dead (proponent board)
+             else if V.all dead (proponent board)
                   then when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
                        when (debug) $ hPutStr stderr rp
@@ -80,8 +80,8 @@ brains =
   , ("sjoerd", sjoerdBrain)
   ]
 
-report :: [Slot] -> String
-report slots = concatMap pr (zip slots [0 :: Int ..])
+report :: V.Vector Slot -> String
+report slots = concatMap pr (zip (V.toList slots) [0 :: Int ..])
   where
     pr (Slot (Card I) 10000, _) = ""
     pr (slot, i)                = "[" ++ show i ++ "] " ++ show slot ++ "\n"
