@@ -5,7 +5,7 @@ import Logic
 import Brain
 
 sjoerdBrain :: Brain
-sjoerdBrain = brainFromMoves . ($ []) 
+sjoerdBrain = brainFromMoves . ($ repeat nop) 
   $ numToMoves 255 1
   . numToMoves 254 2
   . numToMoves 10000 3
@@ -15,11 +15,11 @@ sjoerdBrain = brainFromMoves . ($ [])
 numToMoves :: Int -> Int -> [Move] -> [Move]
 numToMoves 0 slot ms = Move FieldToCard slot Zero : ms
 numToMoves n slot ms
-  | odd n     = Move CardToField slot Succ : numToMoves (n - 1)     slot ms
-  | otherwise = Move CardToField slot Dbl  : numToMoves (n `div` 2) slot ms
+  | odd n     = numToMoves (n - 1)     slot (Move CardToField slot Succ : ms)
+  | otherwise = numToMoves (n `div` 2) slot (Move CardToField slot Dbl  : ms)
 
 numToPrefix :: Int -> Int -> [Move] -> [Move]
-numToPrefix 0 slot = id
+numToPrefix 0 _ = id
 numToPrefix n slot
   | odd n     = prefix Succ slot . numToPrefix (n - 1)     slot
   | otherwise = prefix Dbl  slot . numToPrefix (n `div` 2) slot

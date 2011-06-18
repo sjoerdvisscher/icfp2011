@@ -19,7 +19,7 @@ turn :: Move -> Result (Maybe String)
 turn m = do
   preTurn
   r <- (execute m >> return Nothing) `catchError` (return . Just)
-  modify (\b -> b { opponent = proponent b, proponent = opponent b })
+  modify (\b -> b { opponent = proponent b, proponent = opponent b, applications = 0 })
   return r
 
 preTurn :: Result ()
@@ -46,10 +46,10 @@ execute (Move applyMode ix card) = do
         case applyMode of
           CardToField -> flip apply
           FieldToCard -> apply
-  let app s@(Slot f v) = do
-        when (dead s) $ throwError "Slot is dead"
-        f' <- f `apply'` Card card
-        return $ Slot f' v
-  slots' <- changeM ix app slots
-  put $ board { proponent = slots' }
+  let s@(Slot f v) = slots !! ix
+  when (dead s) $ throwError "Slot is dead"
+  f' <- f `apply'` Card card
+  board' <- get
+  slots' <- change ix (const $ Slot f' v) (proponent board')
+  put $ board' { proponent = slots' }
 
