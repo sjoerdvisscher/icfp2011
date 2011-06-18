@@ -12,3 +12,14 @@ docs: configure
 
 opendocs: docs
 	open dist/doc/html/qltg/index.html
+
+exe: configure
+	cabal build
+
+package: exe
+	cp dist/build/ltg/ltg package/run
+	mkdir package/src
+	cd package; tar czf ../magic-missiles.tar.gz install run README src
+	rm package/run
+	rmdir package/src
+
