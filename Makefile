@@ -1,5 +1,5 @@
 run:
-	ghci -Wall -isrc MonadBrain
+	ghci -Wall -isrc src/ltg
 
 clean:
 	cabal clean
