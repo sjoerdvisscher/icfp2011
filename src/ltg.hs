@@ -15,6 +15,7 @@ import Control.Applicative
 import Control.Monad.Error
 import Control.Monad.Identity
 import Control.Monad.State
+import qualified Data.Vector as V
 import System.Environment
 import System.IO
 
@@ -35,9 +36,9 @@ play b1 b2 first debug = do
              when (debug) $ hPutStrLn stderr "Game done after 100000 moves each."
              when (debug) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
              when (debug) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board)
-        else if all dead (opponent board)
+        else if V.all dead (opponent board)
              then when (debug) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
-             else if all dead (proponent board)
+             else if V.all dead (proponent board)
                   then when (debug) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
                        when (debug) $ hPutStr stderr rp
@@ -49,7 +50,7 @@ play b1 b2 first debug = do
       s <- report <$> get
       return $ maybe "" (++"\n") mb ++ s
     score :: Player -> Int
-    score = length . filter alive
+    score = V.length . V.filter alive
 
 main :: IO ()
 main = do
@@ -78,7 +79,8 @@ brains =
   ]
 
 report :: Board -> String
-report board = concatMap pr (zip slots [0 :: Int ..])
+report board = concat . V.toList
+  $ V.map pr (V.zip slots $ V.enumFromN (0 :: Int) 256)
   where
     slots = opponent board
     pr (Slot (Card I) 10000, _) = ""
