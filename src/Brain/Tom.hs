@@ -17,8 +17,8 @@ import Control.Monad (forever)
 
 tomBrain :: Brain
 tomBrain = toBrain $ forever $ do
-    load' 5 3
+    load 5 3
     move (Move FieldToCard 6 Succ)
-    copy' 6 100 
+    copy 6 100 
     apply 100 3 
-    copy' 100 8
+    copy 100 8
