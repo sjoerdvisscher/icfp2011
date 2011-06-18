@@ -29,7 +29,7 @@ import Control.Monad.Free
 import qualified Data.Vector as V
 
 -- | The Brain monad.
-newtype B a = B { runB :: FreeT ((,) Move) (Reader (Maybe Move, Board)) a }
+newtype B a = B (FreeT ((,) Move) (Reader (Maybe Move, Board)) a)
   deriving (Functor, Monad)
 
 instance MonadReader (Maybe Move, Board) B where
