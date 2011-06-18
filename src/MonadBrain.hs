@@ -23,7 +23,6 @@ import qualified Core
 import Logic
 import Brain
 
-import Data.Monoid
 import Control.Monad.Identity
 import Control.Monad.Reader
 import Control.Monad.Free
