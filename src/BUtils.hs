@@ -50,7 +50,7 @@ composeCard :: SlotNr -> Card -> B ()
 composeCard slot card = do
   applyCardToField K slot
   applyCardToField S slot
-  applyCardToField card slot
+  applyFieldToCard slot card
 
 -- | Attack!
 attack :: SlotNr -> SlotNr -> Int -> SlotNr -> B ()
