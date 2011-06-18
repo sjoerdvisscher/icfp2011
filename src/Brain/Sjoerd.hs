@@ -6,11 +6,14 @@ import Brain
 
 sjoerdBrain :: Brain
 sjoerdBrain = brainFromMoves . ($ repeat nop) 
-  $ numToMoves 255 1
-  . numToMoves 254 2
-  . numToMoves 10000 3
-  . attack 1 1 3 4
-  . attack 2 1 3 4
+  $ attackAll 255 255
+
+attackAll :: Int -> Int -> [Move] -> [Move]
+attackAll 1 _ = id
+attackAll me him = 
+    attack me him 5556 1
+  . attack (me - 1) him 5556 1
+  . attackAll (me - 2) (him - 1)
   
 numToMoves :: Int -> Int -> [Move] -> [Move]
 numToMoves 0 slot ms = Move FieldToCard slot Zero : ms
@@ -30,6 +33,11 @@ fieldToField i j =
   . numToPrefix j i
   . (Move FieldToCard i Zero :)
 
+fieldToNum :: Int -> Int -> [Move] -> [Move]
+fieldToNum i j = 
+    numToPrefix j i
+  . (Move FieldToCard i Zero :)
+
 prefix :: Card -> Int -> [Move] -> [Move]
 prefix c slot ms =
     Move CardToField slot K
@@ -40,7 +48,7 @@ prefix c slot ms =
 attack :: Int -> Int -> Int -> Int -> [Move] -> [Move]
 attack i j n slot =
     (Move FieldToCard slot Attack :)
-  . fieldToField slot i
-  . fieldToField slot j
-  . fieldToField slot n
+  . fieldToNum slot i
+  . fieldToNum slot j
+  . fieldToNum slot n
   
