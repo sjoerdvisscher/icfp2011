@@ -9,6 +9,7 @@ import Brain.Nop
 import Brain.NopReturn
 import Brain.Stdin
 import Brain.Tom
+import Brain.Sjoerd
 
 import Control.Applicative
 import Control.Monad.Error
@@ -39,9 +40,9 @@ play b1 b2 first = do
              else if all dead (proponent board)
                   then hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
+                       hPutStr stderr rp
                        hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
                        (move', brain') <- nextMove curr move board'
-                       hPutStr stderr rp
                        go move' board' (succ ply) next brain'
     step move = do
       mb <- turn move
@@ -73,6 +74,7 @@ brains =
   , ("mirror", mirrorBrain)
   , ("loop",   loopBrain)
   , ("tom",    tomBrain)
+  , ("sjoerd", sjoerdBrain)
   ]
 
 report :: Board -> String
