@@ -11,7 +11,7 @@ module Brain (
   SlotNr,
 
   -- * Cool moves
-  load', copy', apply, applyInt, composeCard
+  load', copy', apply, applyInt, composeCard, attack
 
   ) where
 
@@ -89,3 +89,11 @@ composeCard slot card =
   . (Move CardToField slot S :)
   . (Move FieldToCard slot card :)
 
+-- | Attack!
+attack :: SlotNr -> SlotNr -> Int -> SlotNr -> [Move] -> [Move]
+attack i j n slot =
+    (Move CardToField slot Put :)
+  . (Move FieldToCard slot Attack :)
+  . applyInt slot i
+  . applyInt slot j
+  . applyInt slot n
