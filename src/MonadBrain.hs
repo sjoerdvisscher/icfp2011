@@ -1,14 +1,21 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module MonadBrain (
 
-  B,
-  move,
-  field, field', vitality, vitality',
-  fromI,
-  toBrain
-  
+  -- * Building brains
+  B, move,
+
+  -- * Retrieving information
+  lastOpponentMove, field, field', vitality, vitality',
+
+  -- * Converting to conventional brains
+  toBrain,
+
+  -- * Utility actions
+  fromI
+
   ) where
 
 import Core hiding (field, vitality)
@@ -22,10 +29,10 @@ import Control.Monad.Reader
 import Control.Monad.Free
 
 -- | The Brain monad.
-newtype B a = B { runB :: FreeT ((,) Move) (Reader Board) a }
+newtype B a = B { runB :: FreeT ((,) Move) (Reader (Maybe Move, Board)) a }
   deriving (Functor, Monad)
 
-instance MonadReader Board B where
+instance MonadReader (Maybe Move, Board) B where
   ask = B (lift ask)
   local f (B g) = B (mapFreeT (local f) g)
 
@@ -33,21 +40,25 @@ instance MonadReader Board B where
 move :: Move -> B ()
 move m = B $ wrap (m, return ())
 
+-- | Fetch the opponent's last move, if any.
+lastOpponentMove :: B (Maybe Move)
+lastOpponentMove = asks fst
+
 -- | Look up the specified proponent's field.
 field :: SlotNr -> B Field
-field i = asks (Core.field . (!! i) . proponent)
+field i = asks (Core.field . (!! i) . proponent . snd)
 
 -- | Look up the specified proponent's field.
 field' :: SlotNr -> B Field
-field' i = asks (Core.field . (!! i) . opponent)
+field' i = asks (Core.field . (!! i) . opponent . snd)
 
 -- | Look up the specified proponent's vitality.
 vitality :: SlotNr -> B Vitality
-vitality i = asks (Core.vitality . (!! i) . proponent)
+vitality i = asks (Core.vitality . (!! i) . proponent . snd)
 
 -- | Look up the specified opponent's vitality.
 vitality' :: SlotNr -> B Vitality
-vitality' i = asks (Core.vitality . (!! i) . opponent)
+vitality' i = asks (Core.vitality . (!! i) . opponent . snd)
 
 -- | Make sure the specified slot contains 'I' before executing the action.
 fromI :: (SlotNr -> B a) -> SlotNr -> B a
@@ -62,14 +73,14 @@ fromI f i = do
 toBrain :: B a -> Brain
 toBrain ~b@(B (FreeT (ReaderT f))) = Brain p1 p2
   where
-    p1 = case runIdentity (f emptyBoard) of
+    p1 = case runIdentity (f (Nothing, emptyBoard)) of
           Left _ -> error "toBrain: no more moves"
           Right (m, b') -> return (m, toNextBrain (B b'))
     p2 = return (toNextBrain b)
 
 toNextBrain :: B a -> NextBrain
 toNextBrain (B (FreeT (ReaderT f))) =
-  NextBrain $ \_ board ->
-    case runIdentity (f board) of
+  NextBrain $ \opponentMove board ->
+    case runIdentity (f (Just opponentMove, board)) of
       Left _ -> error "toNextBrain: no more moves"
       Right (m, b') -> return (m, toNextBrain (B b'))
