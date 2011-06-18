@@ -1,7 +1,7 @@
 module BUtils where
 
 import MonadBrain
-import Core
+import Core hiding (vitality)
 import Logic
 
 -- | Loads Int into a Slot
@@ -46,9 +46,18 @@ composeCard slot card = do
 
 -- | Attack!
 attack :: SlotNr -> SlotNr -> Int -> SlotNr -> B ()
-attack i j n slot = do
-  move (Move CardToField slot Put)
-  move (Move FieldToCard slot Attack)
-  applyInt slot i
-  applyInt slot j
-  applyInt slot n
+attack i j n slotInit = atVital attack' slotInit
+  where
+    attack' slot = do
+      move (Move CardToField slot Put)
+      move (Move FieldToCard slot Attack)
+      applyInt slot i
+      applyInt slot j
+      applyInt slot n
+
+-- | Run a function at a vital slot, given a start slot.
+atVital :: (SlotNr -> B ()) -> SlotNr -> B ()
+atVital f 256 = atVital f 0
+atVital f slot = do
+  v <- vitality slot
+  if (v < 100) then atVital f (slot + 1) else f slot
