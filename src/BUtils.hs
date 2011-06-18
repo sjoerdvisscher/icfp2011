@@ -45,15 +45,14 @@ composeCard slot card = do
 attack :: SlotNr -> SlotNr -> Int -> SlotNr -> B ()
 attack i j n slotInit = atVital attack' slotInit
   where
-    attack' slot = do
-      move (Move CardToField slot Put)
+    attack' = fromI $ \slot -> do
       move (Move FieldToCard slot Attack)
       applyInt slot i
       applyInt slot j
       applyInt slot n
 
 -- | Run a function at a vital slot, given a start slot.
-atVital :: (SlotNr -> B ()) -> SlotNr -> B ()
+atVital :: (SlotNr -> B a) -> SlotNr -> B a
 atVital f 256 = atVital f 0
 atVital f slot = do
   v <- vitality slot
