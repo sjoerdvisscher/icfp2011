@@ -26,18 +26,20 @@ turn m = do
 
 preTurn :: Result ()
 preTurn = do
-  board <- get
-  let slots = proponent board
   modify (\b -> b { zombieMode = True })
-  slots' <- V.mapM go slots
+  forM_ [0..255] go
   modify (\b -> b { zombieMode = False })
-  put $ board { proponent = slots' }
   where
-    go s = if vitality s == -1
-           then do
-             try (field s `apply` Card I)
-             return deadSlot
-           else return s
+    go i = do
+           board <- get
+           let slots = proponent board
+               slot  = slots V.! i
+           when (vitality slot == -1) $ do
+             try (field slot `apply` Card I)
+             board' <- get
+             let slots' = proponent board'
+             slots'' <- change i (const deadSlot) slots'
+             modify (\b -> b { proponent = slots'' })
     try ma = void ma `catchError` const (return ())
 
 execute :: Move -> Result ()
