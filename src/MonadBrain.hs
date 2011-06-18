@@ -3,11 +3,15 @@
 
 module MonadBrain (
 
-  B, move, toBrain
+  B,
+  move,
+  field, field', vitality, vitality',
+  toBrain
   
   ) where
 
-import Core
+import Core hiding (field, vitality)
+import qualified Core
 import Logic
 import Brain
 
@@ -27,6 +31,22 @@ instance MonadReader Board B where
 -- | Execute a move and wait for the opponent to move before continuing.
 move :: Move -> B ()
 move m = B $ wrap (m, return ())
+
+-- | Look up the specified proponent's field.
+field :: SlotNr -> B Field
+field i = asks (Core.field . (!! i) . proponent)
+
+-- | Look up the specified proponent's field.
+field' :: SlotNr -> B Field
+field' i = asks (Core.field . (!! i) . opponent)
+
+-- | Look up the specified proponent's vitality.
+vitality :: SlotNr -> B Vitality
+vitality i = asks (Core.vitality . (!! i) . proponent)
+
+-- | Look up the specified opponent's vitality.
+vitality' :: SlotNr -> B Vitality
+vitality' i = asks (Core.vitality . (!! i) . opponent)
 
 -- | Convert a Brain monad computation to a conventional 'Brain'.
 toBrain :: B a -> Brain
