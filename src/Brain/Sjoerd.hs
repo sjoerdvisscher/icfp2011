@@ -8,7 +8,7 @@ sjoerdBrain :: Brain
 sjoerdBrain = brainFromMoves . ($ repeat nop) 
   $ attackAll 255 255
 
-attackAll :: Int -> Int -> [Move] -> [Move]
+attackAll :: SlotNr -> SlotNr -> [Move] -> [Move]
 attackAll (-1) _ = id
 attackAll us it = 
     attack us it 5556 123
