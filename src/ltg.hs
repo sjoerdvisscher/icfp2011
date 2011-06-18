@@ -58,6 +58,7 @@ brains =
   [ ("nop",    nopBrain)
   , ("stdin",  stdinBrain)
   , ("mirror", mirrorBrain)
+  , ("loop",   loopBrain)
   ]
 
 report :: Board -> String
