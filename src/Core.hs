@@ -1,8 +1,11 @@
 module Core (
 
   -- * Vital datatypes and functions
-  Board(..), emptyBoard, Player, Slot(..), SlotNr, dead, alive,
+  Board(..), Player, Slot(..), SlotNr, dead, alive,
   Vitality, Field(..), Card(..),
+
+  -- * Constants
+  emptyBoard, initialSlot, deadSlot,
 
   -- * The Result monad
   Result
@@ -112,5 +115,11 @@ alive = not . dead
 emptyBoard :: Board
 emptyBoard = Board { zombieMode = False, applications = 0, proponent = emptyPlayer, opponent = emptyPlayer }
   where
-    emptyPlayer = V.replicate 256 (Slot (Card I) 10000)
+    emptyPlayer = V.replicate 256 initialSlot
+
+initialSlot :: Slot
+initialSlot = Slot (Card I) 10000
+
+deadSlot :: Slot
+deadSlot = Slot (Card I) 0
 

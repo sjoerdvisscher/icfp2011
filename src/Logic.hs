@@ -36,7 +36,7 @@ preTurn = do
     go s = if vitality s == -1
            then do
              try (field s `apply` Card I)
-             return (Slot (Card I) 0)
+             return deadSlot
            else return s
     try ma = void ma `catchError` const (return ())
 
