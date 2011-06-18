@@ -24,7 +24,9 @@ data Board = Board
 type Player = [Slot]
 
 data Slot = Slot { field :: Field, vitality :: Vitality }
-  deriving Show
+
+instance Show Slot where
+  show (Slot f v) = show f ++ "   {" ++ show v ++ "}"
 
 type Vitality = Int
 

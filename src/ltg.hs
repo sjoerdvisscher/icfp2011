@@ -8,6 +8,7 @@ import Brain.Mirror
 import Brain.Nop
 import Brain.NopReturn
 import Brain.Stdin
+import Brain.Tom
 
 import Control.Applicative
 import Control.Monad.Error
@@ -71,6 +72,7 @@ brains =
   , ("stdin",  stdinBrain)
   , ("mirror", mirrorBrain)
   , ("loop",   loopBrain)
+  , ("tom",    tomBrain)
   ]
 
 report :: Board -> String
@@ -78,7 +80,7 @@ report board = concatMap pr (zip slots [0 :: Int ..])
   where
     slots = opponent board
     pr (Slot (Card I) 10000, _) = ""
-    pr tuple                    = show tuple ++ "\n"
+    pr (slot, i)                = "[" ++ show i ++ "] " ++ show slot ++ "\n"
 
 writeMove :: Move -> IO ()
 writeMove (Move CardToField i c) = do
