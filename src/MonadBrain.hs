@@ -25,6 +25,7 @@ import Logic
 import Brain
 
 import Prelude hiding (break)
+import Control.Applicative
 import Control.Monad.Reader
 import Control.Monad.Free
 import qualified Data.Vector as V
@@ -34,6 +35,10 @@ import System.IO
 -- | The Brain monad.
 newtype B a = B (FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a)
   deriving (Functor, Monad)
+
+instance Applicative B where
+  pure = return
+  (<*>) = ap
 
 instance MonadIO B where
   liftIO = B . lift . liftIO
