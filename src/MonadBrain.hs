@@ -6,6 +6,7 @@ module MonadBrain (
   B,
   move,
   field, field', vitality, vitality',
+  fromI,
   toBrain
   
   ) where
@@ -47,6 +48,15 @@ vitality i = asks (Core.vitality . (!! i) . proponent)
 -- | Look up the specified opponent's vitality.
 vitality' :: SlotNr -> B Vitality
 vitality' i = asks (Core.vitality . (!! i) . opponent)
+
+-- | Make sure the specified slot contains 'I' before executing the action.
+fromI :: (SlotNr -> B a) -> SlotNr -> B a
+fromI f i = do
+  contents <- field i
+  case contents of
+    Card I -> return ()
+    _      -> move (Move CardToField i Put)
+  f i
 
 -- | Convert a Brain monad computation to a conventional 'Brain'.
 toBrain :: B a -> Brain
