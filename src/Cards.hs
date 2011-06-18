@@ -1,4 +1,4 @@
-module Cards (apply, changeM) where
+module Cards (apply, change, changeM) where
 
 import Control.Monad.Identity
 import Control.Monad.Error
