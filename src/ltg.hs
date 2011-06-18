@@ -76,6 +76,6 @@ writeMove (Move CardToField i c) = do
   print c
   print i
 writeMove (Move FieldToCard i c) = do
-  putStrLn "1"
+  putStrLn "2"
   print i
   print c
