@@ -4,6 +4,8 @@ import Core
 import Logic
 import Brain
 import Brain.Loop
+import Brain.Mirror
+import Brain.Stdin
 
 import Control.Applicative
 import Control.Monad.Error
