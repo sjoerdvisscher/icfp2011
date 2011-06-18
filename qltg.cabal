@@ -16,7 +16,14 @@ Library
                     Cards,
                     Core,
                     Logic,
-                    MonadBrain
+                    MonadBrain,
+                    Brain.Loop,
+                    Brain.Mirror,
+                    Brain.Nop,
+                    Brain.NopReturn,
+                    Brain.Sjoerd,
+                    Brain.Stdin,
+                    Brain.Tom
   Hs-Source-Dirs:   src
 
 Executable ltg
