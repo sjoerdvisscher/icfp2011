@@ -1,22 +1,33 @@
-module BUtils (load, copy, apply, applyInt, composeCard, attack) where
+module BUtils (
+
+  applyCardToField, applyFieldToCard,
+  load, copy, apply, applyInt, composeCard, attack
+
+  ) where
 
 import MonadBrain
 import Core
 import Logic
 
+applyCardToField :: Card -> SlotNr -> B ()
+applyCardToField card slot = move (Move CardToField slot card)
+
+applyFieldToCard :: SlotNr -> Card -> B ()
+applyFieldToCard slot card = move (Move FieldToCard slot card)
+
 -- | Loads Int into a Slot
 load :: Int -> SlotNr -> B ()
 load n = fromI $ \slot ->
   case n of
-    0             -> move (Move FieldToCard slot Zero)
-    _ | odd n     -> load (n - 1)     slot >> move (Move CardToField slot Succ)
-    _ | otherwise -> load (n `div` 2) slot >> move (Move CardToField slot Dbl)
+    0             -> applyFieldToCard slot Zero
+    _ | odd n     -> load (n - 1)     slot >> applyCardToField Succ slot
+    _ | otherwise -> load (n `div` 2) slot >> applyCardToField Dbl slot
 
 -- | Copies field of src to field of dest
 copy :: SlotNr -> SlotNr -> B ()
 copy src dest = do
   load src dest
-  move (Move CardToField dest Get)
+  applyCardToField Get dest
 
 -- | Applies function in slot `func` to value in slot `arg`, replacing slot with
 -- value
@@ -24,11 +35,11 @@ apply :: SlotNr -> SlotNr -> B ()
 apply func arg = do
   composeCard func Get
   applyInt func arg
-  move (Move FieldToCard func Zero)
+  applyFieldToCard func Zero
 
 -- | Applies function in slot to value x, replacing slot with value
 applyInt :: SlotNr -> Int -> B ()
-applyInt slot 0 = move (Move FieldToCard slot Zero)
+applyInt slot 0 = applyFieldToCard slot Zero
 applyInt slot n
   | odd n     = composeCard slot Succ >> applyInt slot (n - 1)    
   | otherwise = composeCard slot Dbl  >> applyInt slot (n `div` 2)
@@ -37,15 +48,15 @@ applyInt slot n
 -- composition
 composeCard :: SlotNr -> Card -> B ()
 composeCard slot card = do
-  move (Move CardToField slot K)
-  move (Move CardToField slot S)
-  move (Move FieldToCard slot card)
+  applyCardToField K slot
+  applyCardToField S slot
+  applyCardToField card slot
 
 -- | Attack!
 attack :: SlotNr -> SlotNr -> Int -> SlotNr -> B ()
 attack i j n slot = do
-  move (Move CardToField slot Put)
-  move (Move FieldToCard slot Attack)
+  applyCardToField Put slot
+  applyFieldToCard slot Attack
   applyInt slot i
   applyInt slot j
   applyInt slot n
