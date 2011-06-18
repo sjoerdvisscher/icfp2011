@@ -17,30 +17,30 @@ import Control.Monad.State
 import System.Environment
 import System.IO
 
-play :: Brain -> Brain -> Bool -> IO ()
-play b1 b2 first = do
-  hPutStrLn stderr $ "Player #0   [0]"
+play :: Brain -> Brain -> Bool -> Handle -> IO ()
+play b1 b2 first h = do
+  hPutStrLn h $ "Player #0   [0]"
   (openingMove, brain1) <- playFirst b1
   brain2 <- playSecond b2
   go openingMove emptyBoard 1 brain2 brain1
   where
     go :: Move -> Board -> Int -> NextBrain -> NextBrain -> IO ()
     go move board ply curr next = do
-      hPrint stderr move
+      hPrint h move
       when (first == (ply `rem` 2 /= 0)) $ writeMove move
       let Right (rp, board') = runIdentity $ runErrorT $ runStateT (step move) board
       if ply == 200000
         then do
-             hPutStrLn stderr "Game done after 100000 moves each."
-             hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
-             hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board)
+             hPutStrLn h "Game done after 100000 moves each."
+             hPutStrLn h $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
+             hPutStrLn h $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board)
         else if all dead (opponent board)
-             then hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
+             then hPutStrLn h $ "Player #" ++ show (ply `rem` 2) ++ " won!"
              else if all dead (proponent board)
-                  then hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
+                  then hPutStrLn h $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
-                       hPutStr stderr rp
-                       hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
+                       hPutStr h rp
+                       hPutStrLn h $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
                        (move', brain') <- nextMove curr move board'
                        go move' board' (succ ply) next brain'
     step move = do
@@ -53,15 +53,17 @@ play b1 b2 first = do
 main :: IO ()
 main = do
   hPutStrLn stderr "Lambda: The Gathering, by Magic Missiles"
+  devnull <- openFile "/dev/null" WriteMode
   args <- getArgs
   case map (`eitherLookup` brains) args of
-    []                   -> play stdinBrain  stdinBrain  True
-    [Left "0"]           -> play mirrorBrain stdinBrain  True
-    [Left "1"]           -> play stdinBrain  mirrorBrain False
-    [Right b1, Right b2] -> play b1 b2 True
+    []                   -> play stdinBrain  stdinBrain  True  stderr
+    [Left "0"]           -> play sjoerdBrain stdinBrain  True  devnull
+    [Left "1"]           -> play stdinBrain  sjoerdBrain False devnull
+    [Right b1, Right b2] -> play b1          b2          True  stderr
     _                    -> do
       hPutStrLn stderr "Usage: ltg <brain> <brain>"
       hPutStrLn stderr $ "  where  brain `elem` " ++ show (map fst brains) 
+  hClose devnull
   where
     eitherLookup e as = maybe (Left e) Right $ lookup e as
 
