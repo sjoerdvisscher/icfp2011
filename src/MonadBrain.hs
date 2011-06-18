@@ -20,6 +20,7 @@ import Data.Monoid
 import Control.Monad.Identity
 import Control.Monad.Reader
 import Control.Monad.Free
+import qualified Data.Vector as V
 
 -- | The Brain monad.
 newtype B a = B { runB :: FreeT ((,) Move) (Reader Board) a }
@@ -35,19 +36,19 @@ move m = B $ wrap (m, return ())
 
 -- | Look up the specified proponent's field.
 field :: SlotNr -> B Field
-field i = asks (Core.field . (!! i) . proponent)
+field i = asks (Core.field . (V.! i) . proponent)
 
 -- | Look up the specified proponent's field.
 field' :: SlotNr -> B Field
-field' i = asks (Core.field . (!! i) . opponent)
+field' i = asks (Core.field . (V.! i) . opponent)
 
 -- | Look up the specified proponent's vitality.
 vitality :: SlotNr -> B Vitality
-vitality i = asks (Core.vitality . (!! i) . proponent)
+vitality i = asks (Core.vitality . (V.! i) . proponent)
 
 -- | Look up the specified opponent's vitality.
 vitality' :: SlotNr -> B Vitality
-vitality' i = asks (Core.vitality . (!! i) . opponent)
+vitality' i = asks (Core.vitality . (V.! i) . opponent)
 
 -- | Make sure the specified slot contains 'I' before executing the action.
 fromI :: (SlotNr -> B a) -> SlotNr -> B a
