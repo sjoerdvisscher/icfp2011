@@ -10,7 +10,7 @@ import Cards
 data ApplyMode = CardToField | FieldToCard
   deriving Show
 
-data Move = Move ApplyMode Int Card
+data Move = Move ApplyMode SlotNr Card
   deriving Show
 
 -- | Short for @'Move' 'CardToField' 0 'I'@
