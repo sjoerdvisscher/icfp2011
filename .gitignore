@@ -1,3 +1,10 @@
 dist
 *.swp
 
+# profiling info
+*.aux
+*.hp
+*.prof
+*.ps
+*.summary
+
