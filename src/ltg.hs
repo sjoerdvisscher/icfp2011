@@ -9,31 +9,33 @@ import Control.Monad.Error
 import Control.Monad.Identity
 import Control.Monad.State
 import System.Environment
+import System.IO
 
 play :: Brain -> Brain -> IO ()
 play b1 b2 = do
-  putStrLn $ "Player #0   [0]"
+  hPutStrLn stderr $ "Player #0   [0]"
   (openingMove, brain1) <- playFirst b1
   brain2 <- playSecond b2
   go openingMove emptyBoard 1 brain2 brain1
   where
     go :: Move -> Board -> Int -> NextBrain -> NextBrain -> IO ()
     go move board ply curr next = do
-      print move
+      hPrint stderr move
+      writeMove move
       let Right (rp, board') = runIdentity $ runErrorT $ runStateT (step move) board
       if ply == 200000
         then do
-             putStrLn "Game done after 100000 moves each."
-             putStrLn $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
-             putStrLn $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board)
+             hPutStrLn stderr "Game done after 100000 moves each."
+             hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
+             hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board)
         else if all dead (opponent board)
-             then putStrLn $ "Player #" ++ show (ply `rem` 2) ++ " won!"
+             then hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
              else if all dead (proponent board)
-                  then putStrLn $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
+                  then hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
-                       putStrLn $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
+                       hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ "   [" ++ show (ply `quot` 2) ++ "]"
                        (move', brain') <- nextMove curr move board'
-                       putStr rp
+                       hPutStr stderr rp
                        go move' board' (succ ply) next brain'
     step move = do
       mb <- turn move
@@ -44,7 +46,7 @@ play b1 b2 = do
 
 main :: IO ()
 main = do
-  putStrLn "Lambda: The Gathering, by Magic Missiles"
+  hPutStrLn stderr "Lambda: The Gathering, by Magic Missiles"
   args <- getArgs
   case map (`lookup` brains) args of
     []                 -> play stdinBrain stdinBrain
@@ -68,3 +70,12 @@ report board = concatMap pr (zip slots [0 :: Int ..])
     pr (Slot (Card I) 10000, _) = ""
     pr tuple                    = show tuple ++ "\n"
 
+writeMove :: Move -> IO ()
+writeMove (Move CardToField i c) = do
+  putStrLn "1"
+  print c
+  print i
+writeMove (Move FieldToCard i c) = do
+  putStrLn "1"
+  print i
+  print c

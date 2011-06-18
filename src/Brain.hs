@@ -49,10 +49,9 @@ stdinBrain = simpleIOBrain (const readMove)
     readMove :: IO Move
     readMove = parse <$> getLine <*> getLine <*> getLine
       where
-        parse app ix card = Move (readApply app) (read ix) (read card)
-        readApply "1" = CardToField
-        readApply "2" = FieldToCard
-        readApply _   = error "readApply: Not valid ApplyMode"
+        parse "1" l1 l2 = Move CardToField (read l2) (read l1)
+        parse "2" l1 l2 = Move FieldToCard (read l1) (read l2)
+        parse _   _  _  = error "parse: Not valid ApplyMode"
 
 mirrorBrain :: Brain
 mirrorBrain = Brain
