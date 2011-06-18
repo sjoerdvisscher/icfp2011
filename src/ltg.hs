@@ -15,6 +15,7 @@ import Control.Applicative
 import Control.Monad.Error
 import Control.Monad.Identity
 import Control.Monad.State
+import qualified Data.Vector as V
 import System.Environment
 import System.IO
 
@@ -51,7 +52,7 @@ play b1 b2 first debug = do
       s <- (report . opponent) <$> get
       return $ maybe "" (++"\n") mb ++ s
     score :: Player -> Int
-    score = length . filter alive
+    score = V.length . V.filter alive
 
 main :: IO ()
 main = do

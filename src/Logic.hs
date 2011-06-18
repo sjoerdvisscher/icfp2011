@@ -2,6 +2,7 @@ module Logic (turn, Move(..), ApplyMode(..), nop) where
 
 import Control.Monad.Error
 import Control.Monad.State
+import qualified Data.Vector as V
 
 import Core
 import Cards
@@ -12,6 +13,7 @@ data ApplyMode = CardToField | FieldToCard
 data Move = Move ApplyMode Int Card
   deriving Show
 
+-- | Short for @'Move' 'CardToField' 0 'I'@
 nop :: Move
 nop = Move CardToField 0 I
 
@@ -27,7 +29,7 @@ preTurn = do
   board <- get
   let slots = proponent board
   modify (\b -> b { zombieMode = True })
-  slots' <- mapM go slots
+  slots' <- V.mapM go slots
   modify (\b -> b { zombieMode = False })
   put $ board { proponent = slots' }
   where
@@ -46,7 +48,7 @@ execute (Move applyMode ix card) = do
         case applyMode of
           CardToField -> flip apply
           FieldToCard -> apply
-  let s@(Slot f v) = slots !! ix
+  let s@(Slot f v) = slots V.! ix
   when (dead s) $ throwError "Slot is dead"
   f' <- f `apply'` Card card
   board' <- get

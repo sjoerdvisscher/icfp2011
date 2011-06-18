@@ -1,5 +1,5 @@
 run:
-	ghci -isrc Brain
+	ghci -Wall -isrc MonadBrain
 
 clean:
 	cabal clean

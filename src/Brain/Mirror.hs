@@ -2,13 +2,12 @@ module Brain.Mirror where
 
 import Logic
 import Brain
+import MonadBrain
+
+import Data.Maybe
+import Control.Monad
 
 
 mirrorBrain :: Brain
-mirrorBrain = Brain
-  { playFirst  = return (nop, nextBrain) 
-  , playSecond = return nextBrain
-  }
-  where
-    nextBrain = NextBrain (\m _ -> return (m, nextBrain))
-
+mirrorBrain = toBrain $
+  forever $ lastOpponentMove >>= move . fromMaybe nop
