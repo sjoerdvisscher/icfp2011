@@ -66,7 +66,8 @@ brainFromMoves ms = Brain
                       (return (head ms, next (tail ms)))
                       (return (next ms))
   where
-    next (m:ms) = NextBrain (\_ _ -> return (m, next ms))
+    next (m:ms') = NextBrain (\_ _ -> return (m, next ms'))
+    next []      = error "brainFromMoves: empty list"
 
 loopBrain :: Brain
 loopBrain = brainFromMoves $ cycle $ concat $ map f [0..255]

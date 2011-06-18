@@ -11,8 +11,8 @@ import Control.Monad.State
 import System.Environment
 import System.IO
 
-play :: Brain -> Brain -> IO ()
-play b1 b2 = do
+play :: Brain -> Brain -> Bool -> IO ()
+play b1 b2 first = do
   hPutStrLn stderr $ "Player #0   [0]"
   (openingMove, brain1) <- playFirst b1
   brain2 <- playSecond b2
@@ -21,7 +21,7 @@ play b1 b2 = do
     go :: Move -> Board -> Int -> NextBrain -> NextBrain -> IO ()
     go move board ply curr next = do
       hPrint stderr move
-      writeMove move
+      when (first == (ply `rem` 2 /= 0)) $ writeMove move
       let Right (rp, board') = runIdentity $ runErrorT $ runStateT (step move) board
       if ply == 200000
         then do
@@ -48,12 +48,16 @@ main :: IO ()
 main = do
   hPutStrLn stderr "Lambda: The Gathering, by Magic Missiles"
   args <- getArgs
-  case map (`lookup` brains) args of
-    []                 -> play stdinBrain stdinBrain
-    [Just b1, Just b2] -> play b1 b2
-    _                  -> do
+  case map (`eitherLookup` brains) args of
+    []                   -> play stdinBrain  stdinBrain  True
+    [Left "0"]           -> play mirrorBrain stdinBrain  True
+    [Left "1"]           -> play stdinBrain  mirrorBrain False
+    [Right b1, Right b2] -> play b1 b2 True
+    _                    -> do
       putStrLn "Usage: ltg <brain> <brain>"
       putStrLn $ "  where  brain `elem` " ++ show (map fst brains) 
+  where
+    eitherLookup e as = maybe (Left e) Right $ lookup e as
 
 brains :: [(String, Brain)]
 brains =
