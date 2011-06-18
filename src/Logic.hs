@@ -12,6 +12,7 @@ data ApplyMode = CardToField | FieldToCard
 data Move = Move ApplyMode Int Card
   deriving Show
 
+-- | Short for @'Move' 'CardToField' 0 'I'@
 nop :: Move
 nop = Move CardToField 0 I
 
