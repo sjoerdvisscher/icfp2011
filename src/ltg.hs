@@ -59,7 +59,8 @@ main = do
   hPutStrLn stderr "Lambda: The Gathering, by Magic Missiles"
   args <- getArgs
   case map (`eitherLookup` brains) args of
-    []                   -> play stdinBrain  stdinBrain  True  True
+    []                   -> hPutStrLn stderr "Reading moves for both players from stdin." >>
+                            play stdinBrain  stdinBrain  True  True
     [Left "0"]           -> play sjoerdBrain stdinBrain  True  False
     [Left "1"]           -> play stdinBrain  sjoerdBrain False False
     [Right b1, Right b2] -> play b1          b2          True  False

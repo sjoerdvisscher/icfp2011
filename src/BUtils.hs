@@ -1,12 +1,13 @@
 module BUtils (
 
   applyCardToField, applyFieldToCard,
+  fromI,
   load, copy, apply, applyInt, composeCard, attack
 
   ) where
 
 import MonadBrain
-import Core hiding (vitality)
+import Core hiding (vitality, field)
 import Logic
 
 applyCardToField :: Card -> SlotNr -> B ()
@@ -14,6 +15,15 @@ applyCardToField card slot = move (Move CardToField slot card)
 
 applyFieldToCard :: SlotNr -> Card -> B ()
 applyFieldToCard slot card = move (Move FieldToCard slot card)
+
+-- | Make sure the specified slot contains 'I' before executing the action.
+fromI :: (SlotNr -> B a) -> SlotNr -> B a
+fromI f i = do
+  contents <- field i
+  case contents of
+    Card I -> return ()
+    _      -> move (Move CardToField i Put)
+  f i
 
 -- | Loads Int into a Slot
 load :: Int -> SlotNr -> B ()

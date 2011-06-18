@@ -54,21 +54,21 @@ add b n s@(Slot f v)
 f_I :: Monad m => a -> m a
 f_I = \x -> return x
 
-f_succ :: Field -> StateT Board (ErrorT String Identity) Field
+f_succ :: Field -> Result Field
 f_succ = \n -> do
   n' <- getValue n
   let m  = n' + 1
       m' = min m 65535
   return $ Value $ m'
 
-f_dbl :: Field -> StateT Board (ErrorT String Identity) Field
+f_dbl :: Field -> Result Field
 f_dbl = \n -> do
   n' <- getValue n
   let m  = n' * 2
       m' = min m 65535
   return $ Value $ m'
 
-f_get :: Field -> StateT Board (ErrorT String Identity) Field
+f_get :: Field -> Result Field
 f_get = \i -> do
   i' <- getSlotIndex i
   board <- get
@@ -85,7 +85,7 @@ f_S
   :: Field
      -> Field
      -> Field
-     -> StateT Board (ErrorT String Identity) Field
+     -> Result Field
 f_S = \f g x -> do
   h <- f `apply` x
   y <- g `apply` x
@@ -95,7 +95,7 @@ f_S = \f g x -> do
 f_K :: Monad m => a -> t -> m a
 f_K x _ = return x
 
-f_inc :: Field -> StateT Board (ErrorT String Identity) Field
+f_inc :: Field -> Result Field
 f_inc = \i -> do
   i' <- getSlotIndex i
   board <- get
@@ -104,7 +104,7 @@ f_inc = \i -> do
   put $ board { proponent = slots' }
   return $ Card I
 
-f_dec :: Field -> StateT Board (ErrorT String Identity) Field
+f_dec :: Field -> Result Field
 f_dec = \i -> do
   i' <- getSlotIndex i
   board <- get
@@ -117,7 +117,7 @@ f_attack
   :: Field
      -> Field
      -> Field
-     -> StateT Board (ErrorT String Identity) Field
+     -> Result Field
 f_attack = \i j n -> do
   i' <- getSlotIndex i
   n' <- getValue n
@@ -139,7 +139,7 @@ f_help
   :: Field
      -> Field
      -> Field
-     -> StateT Board (ErrorT String Identity) Field
+     -> Result Field
 f_help = \i j n -> do
   i' <- getSlotIndex i
   n' <- getValue n
@@ -156,14 +156,14 @@ f_help = \i j n -> do
   put $ board' { proponent = proponentSlots'' }
   return $ Card I
 
-f_copy :: Field -> StateT Board (ErrorT String Identity) Field
+f_copy :: Field -> Result Field
 f_copy = \i -> do
   i' <- getSlotIndex i
   board <- get
   let slots = opponent board
   return $ field $ slots V.! i'
 
-f_revive :: Field -> StateT Board (ErrorT String Identity) Field
+f_revive :: Field -> Result Field
 f_revive = \i -> do
   i' <- getSlotIndex i
   board <- get
@@ -176,7 +176,7 @@ f_revive = \i -> do
   return $ Card I
 
 f_zombie
-  :: Field -> Field -> StateT Board (ErrorT String Identity) Field
+  :: Field -> Field -> Result Field
 f_zombie = \i x -> do
   i' <- getSlotIndex i
   board <- get

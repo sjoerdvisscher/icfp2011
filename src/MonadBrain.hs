@@ -13,8 +13,8 @@ module MonadBrain (
   -- * Converting to conventional brains
   toBrain,
 
-  -- * Utility actions
-  fromI
+  -- * Breakpoints
+  break
 
   ) where
 
@@ -23,14 +23,19 @@ import qualified Core
 import Logic
 import Brain
 
-import Control.Monad.Identity
+import Prelude hiding (break)
 import Control.Monad.Reader
 import Control.Monad.Free
 import qualified Data.Vector as V
 
+import System.IO
+
 -- | The Brain monad.
-newtype B a = B (FreeT ((,) Move) (Reader (Maybe Move, Board)) a)
+newtype B a = B (FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a)
   deriving (Functor, Monad)
+
+instance MonadIO B where
+  liftIO = B . lift . liftIO
 
 instance MonadReader (Maybe Move, Board) B where
   ask = B (lift ask)
@@ -60,27 +65,30 @@ vitality i = asks (Core.vitality . (V.! i) . proponent . snd)
 vitality' :: SlotNr -> B Vitality
 vitality' i = asks (Core.vitality . (V.! i) . opponent . snd)
 
--- | Make sure the specified slot contains 'I' before executing the action.
-fromI :: (SlotNr -> B a) -> SlotNr -> B a
-fromI f i = do
-  contents <- field i
-  case contents of
-    Card I -> return ()
-    _      -> move (Move CardToField i Put)
-  f i
-
 -- | Convert a Brain monad computation to a conventional 'Brain'.
 toBrain :: B a -> Brain
 toBrain ~b@(B (FreeT (ReaderT f))) = Brain p1 p2
   where
-    p1 = case runIdentity (f (Nothing, emptyBoard)) of
-          Left _ -> error "toBrain: no more moves"
-          Right (m, b') -> return (m, toNextBrain (B b'))
+    p1 = do
+      ei <- f (Nothing, emptyBoard)
+      case ei of
+        Left _        -> error "toBrain: no more moves"
+        Right (m, b') -> return (m, toNextBrain (B b'))
     p2 = return (toNextBrain b)
 
 toNextBrain :: B a -> NextBrain
 toNextBrain (B (FreeT (ReaderT f))) =
-  NextBrain $ \opponentMove board ->
-    case runIdentity (f (Just opponentMove, board)) of
-      Left _ -> error "toNextBrain: no more moves"
+  NextBrain $ \opponentMove board -> do
+    ei <- f (Just opponentMove, board)
+    case ei of
+      Left _        -> error "toNextBrain: no more moves"
       Right (m, b') -> return (m, toNextBrain (B b'))
+
+
+-- Breakpoints
+
+-- | Insert a breakpoint.
+break :: B ()
+break = liftIO $ do
+  hPutStrLn stderr "Breakpoint hit. Press <Enter> to continue."
+  void getLine
