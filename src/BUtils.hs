@@ -1,24 +1,21 @@
-module BUtils where
+module BUtils (load, copy, apply, applyInt, composeCard, attack) where
 
 import MonadBrain
 import Core
 import Logic
 
 -- | Loads Int into a Slot
--- 
--- where the slot currently is I 
-load' :: Int -> SlotNr -> B ()
-load' 0 slot = move (Move FieldToCard slot Zero)
-load' n slot
-  | odd n     = load' (n - 1)     slot >> move (Move CardToField slot Succ)
-  | otherwise = load' (n `div` 2) slot >> move (Move CardToField slot Dbl)
+load :: Int -> SlotNr -> B ()
+load n = fromI $ \slot ->
+  case n of
+    0             -> move (Move FieldToCard slot Zero)
+    _ | odd n     -> load (n - 1)     slot >> move (Move CardToField slot Succ)
+    _ | otherwise -> load (n `div` 2) slot >> move (Move CardToField slot Dbl)
 
 -- | Copies field of src to field of dest
--- 
--- where dest currently is I 
-copy' :: SlotNr -> SlotNr -> B ()
-copy' src dest = do
-  load' src dest
+copy :: SlotNr -> SlotNr -> B ()
+copy src dest = do
+  load src dest
   move (Move CardToField dest Get)
 
 -- | Applies function in slot `func` to value in slot `arg`, replacing slot with
