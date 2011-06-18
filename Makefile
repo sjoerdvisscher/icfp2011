@@ -23,3 +23,8 @@ package: build
 	rm package/run
 	rmdir package/src
 
+profile: clean
+	cabal configure --enable-executable-profiling --ghc-option=-rtsopts
+	cabal build
+	dist/build/ltg/ltg nop stdin +RTS -p -hc -sltg.summary < tests/loop.ltg
+	hp2ps ltg.hp
