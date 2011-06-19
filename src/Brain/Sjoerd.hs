@@ -16,7 +16,7 @@ sjoerdBrain = toBrain $ do
 attackAll :: SlotNr -> SlotNr -> B ()
 attackAll (-1) it = attackAll1 255 it
 attackAll us it = do
-  reviveAll
+  reviveOne
   attack us it 5556 123
   attack (us - 1) it 5556 123
   attackAll (us - 2) (it - 1)
@@ -24,7 +24,7 @@ attackAll us it = do
 attackAll1 :: SlotNr -> SlotNr -> B ()
 attackAll1 0 _ = return ()
 attackAll1 us it = do
-  reviveAll
+  reviveOne
   attack us it 3705 123
   attack (us - 1) it 3705 123
   attack (us - 2) it 3705 123
@@ -38,5 +38,9 @@ reviveAll = availableSlot $ \slot -> do
       slot `applyFieldToCard` Revive
       applyInt slot j
 
-        
+reviveOne :: B ()
+reviveOne = availableSlot $ \slot -> do
+  findSlot (return . dead) $ \j -> do
+    slot `applyFieldToCard` Revive
+    applyInt slot j
         
