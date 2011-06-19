@@ -16,7 +16,7 @@ module MonadBrain (
   toBrain,
 
   -- * Breakpoints
-  break, stepwise, alert
+  break, stepwise, alert, printState
 
   ) where
 
@@ -29,6 +29,7 @@ import Prelude hiding (break)
 import Data.Char
 import Data.IORef
 import Control.Applicative
+import Data.Traversable (for)
 import Control.Monad.Reader
 import Control.Monad.Free
 import qualified Data.Vector as V
@@ -130,6 +131,19 @@ stepwise b = do
             | otherwise                         -> prompt vActive
 
 -- | Alert a message to the console
+printState :: B ()
+printState = do
+  alert "Proponent:"
+  _ <- go proponent
+  alert "Opponent:"
+  _ <- go opponent
+  return ()
+  where
+    go sel = do
+      slts <- slots sel
+      for (zip [0..] (V.toList slts)) (alert . uncurry showIndexedSlot)
+
 alert :: MonadIO m => String -> m ()
-alert s = liftIO (hPutStrLn stderr s)
+alert "" = return ()
+alert s  = liftIO (hPutStrLn stderr s)
 
