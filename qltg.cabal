@@ -11,20 +11,22 @@ Category:           Game
 Build-type:         Simple
 Cabal-version:      >=1.2
 
-Library
-  Exposed-Modules:  Brain,
-                    Cards,
-                    Core,
-                    Logic,
-                    MonadBrain,
-                    Brain.Loop,
-                    Brain.Mirror,
-                    Brain.Nop,
-                    Brain.NopReturn,
-                    Brain.Sjoerd,
-                    Brain.Stdin,
-                    Brain.Tom
-  Hs-Source-Dirs:   src
+Flag buildLibrary
+ 
+-- Library
+--   Exposed-Modules:  Brain,
+--                     Cards,
+--                     Core,
+--                     Logic,
+--                     MonadBrain,
+--                     Brain.Loop,
+--                     Brain.Mirror,
+--                     Brain.Nop,
+--                     Brain.NopReturn,
+--                     Brain.Sjoerd,
+--                     Brain.Stdin,
+--                     Brain.Tom
+--   Hs-Source-Dirs:   src
 
 Executable ltg
   Main-is:          ltg.hs
