@@ -61,8 +61,8 @@ main = do
   case map (`eitherLookup` brains) args of
     []                   -> hPutStrLn stderr "Reading moves for both players from stdin." >>
                             play stdinBrain  stdinBrain  True  True
-    [Left "0"]           -> play sjoerdBrain stdinBrain  True  False
-    [Left "1"]           -> play stdinBrain  sjoerdBrain False False
+    [Left "0"]           -> play tomBrain    stdinBrain  True  False
+    [Left "1"]           -> play stdinBrain  tomBrain    False False
     [Right b1, Right b2] -> play b1          b2          True  False
     _                    -> do
       hPutStrLn stderr "Usage: ltg <brain> <brain>"
