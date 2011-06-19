@@ -39,7 +39,7 @@ preTurn = do
              board' <- get
              let slots' = proponent board'
              slots'' <- change i (const deadSlot) slots'
-             modify (\b -> b { proponent = slots'' })
+             modify (\b -> b { applications = 0, proponent = slots'' })
     try ma = void ma `catchError` const (return ())
 
 execute :: Move -> Result ()

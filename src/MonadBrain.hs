@@ -65,7 +65,7 @@ lastOpponentMove = asks fst
 field :: SlotNr -> B Field
 field i = asks (Core.field . (V.! i) . proponent . snd)
 
--- | Look up the specified proponent's field.
+-- | Look up the specified opponent's field.
 field' :: SlotNr -> B Field
 field' i = asks (Core.field . (V.! i) . opponent . snd)
 
@@ -76,6 +76,10 @@ vitality i = asks (Core.vitality . (V.! i) . proponent . snd)
 -- | Look up the specified opponent's vitality.
 vitality' :: SlotNr -> B Vitality
 vitality' i = asks (Core.vitality . (V.! i) . opponent . snd)
+
+-- | Returns all slots from proponent
+slots :: B [V.Vector Slot]
+slots = asks (proponent . snd)
 
 -- | Convert a Brain monad computation to a conventional 'Brain'.
 toBrain :: B a -> Brain
