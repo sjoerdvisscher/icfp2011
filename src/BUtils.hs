@@ -88,5 +88,5 @@ attack i j n slotInit = atVital attack' slotInit
 atVital :: (SlotNr -> B a) -> SlotNr -> B a
 atVital f 256 = atVital f 0
 atVital f slot = do
-  v <- vitality slot
+  v <- vitality slot proponent
   if (v < 100) then atVital f (slot + 1) else f slot

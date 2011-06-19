@@ -33,7 +33,7 @@ attackAll1 us it = do
 reviveAll :: B ()
 reviveAll = availableSlot $ \slot -> do
   for_ [0..255] $ \j -> do
-    v <- vitality j
+    v <- vitality j proponent
     when (v <= 0) $ do
       slot `applyFieldToCard` Revive
       applyInt slot j

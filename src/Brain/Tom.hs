@@ -6,48 +6,92 @@ import Brain
 import MonadBrain
 import BUtils
 
-import Control.Monad (forever)
-import Data.Foldable
+import Control.Arrow
+import Control.Applicative
+import Control.Monad (forever, when)
+import Data.Maybe
+import Data.List (sort, (\\), sortBy)
+import qualified Data.Vector as V
 import Prelude hiding (break)
+import Data.Ord
 
 tomBrain :: Brain
 tomBrain = toBrain $ do
-  -- todo: pick random start slot
+  mm <- lastOpponentMove
+  when (isNothing mm) $ move nop
+
   -- Attack first
-  attack 255 0 5556 123
-  attack 254 0 5556 123
+  -- random
+  attack 128 0 5556 123
+  attack 129 0 5556 123
 
   -- break
-  -- todo: get their live slots, sorted by expression size / importantness
-  for_ [0,2..255] $ \i -> do
-    -- todo: get my live/empty slot, sorted by vitality
-    Put `applyCardToField` 253
-    253 `applyFieldToCard` Help
-    253 `applyInt` i
-    253 `applyInt` (i + 1)
-    K `applyCardToField` 253
-    S `applyCardToField` 253
+  forever $ do
 
-    -- todo: get my live/empty slot, sorted by vitality
-    load 10000 252
-    K `applyCardToField` 252
-    253 `apply` 252
+    (zombieSlot:_) <- free
+    zombieSlot `applyFieldToCard` Help
+    (opSlot1:_) <- interesting
+    zombieSlot `applyInt` opSlot1
+    (opSlot2:_) <- exclude [opSlot1] <$> interesting
+    zombieSlot `applyInt` opSlot2
+    K `applyCardToField` zombieSlot
+    S `applyCardToField` zombieSlot
+
+    --printState
+    --break
+    (zombieArgSlot:_) <- exclude [zombieSlot] <$> free
+    v <- MonadBrain.vitality opSlot1 opponent
+    load v zombieArgSlot
+    K `applyCardToField` zombieArgSlot
+    zombieSlot `apply` zombieArgSlot
+    Put `applyCardToField` zombieArgSlot
 
     -- alert "before zombie"
     -- break
 
     -- todo: get their dead slots
-    251 `applyFieldToCard` Zombie
-    251 `applyInt` if i == 0 then 0 else (255 - (i - 2))
-    251 `apply` 253
+    frees <- free
+    --printState
+    --alert $ "free: " ++ show frees
+    -- break
+    (zombieAttackSlot:_) <- exclude [zombieSlot, zombieArgSlot] <$> free
+    zombieAttackSlot `applyFieldToCard` Zombie
+    (opSlot3:_) <- deadSlots
+    zombieAttackSlot `applyInt` (255 - opSlot3)
+    zombieAttackSlot `apply` zombieSlot
+    Put `applyCardToField` zombieSlot
 
-    alert "after zombie"
+    -- alert "after zombie"
     -- break
 
-  -- todo: keep cycling ^ until opponent is dead, remove nops
-  forever (move nop)
+exclude :: [SlotNr] -> [SlotNr] -> [SlotNr]
+exclude blackList sluts = sluts \\ blackList
 
-interessting :: B [SlotNr]
-interessting = do
-  return $ [0..]
+-- | Opponent's slots that are alive, sorted by size
+interesting :: B [SlotNr]
+interesting = do
+  slts <- slots opponent
+  let ss = map snd . reverse . sortBy (comparing fst) . reverse . (map . first $ size . Core.field)
+             $ filter (alive . fst) $ zip (V.toList slts) [0 :: Int ..]
+  return $ ss ++ [0..255] -- In case there's a bug, return everything
+
+-- | Dead's slots that are dead, with the biggest expresssion
+deadSlots :: B [SlotNr]
+deadSlots = do
+  slts <- slots opponent
+  let ss = map snd . reverse . sort . (map . first $ size . Core.field)
+             $ filter (dead . fst) $ zip (V.toList slts) [0 :: Int ..]
+  return $ ss
+
+-- | Proponent's slots that are empty, sorted by vitality
+free :: B [SlotNr]
+free = do
+  slts <- slots proponent
+  let ss = map snd . reverse . sortBy (comparing fst) . reverse . (map . first $ Core.vitality)
+             $ filter (\(s,_) -> isI s && alive s) $ zip (V.toList slts) [0 :: Int ..]
+  return $ ss
+  where
+    isI :: Slot -> Bool
+    isI (Slot (Card I) _) = True
+    isI _                 = False
 

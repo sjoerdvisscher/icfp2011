@@ -9,13 +9,14 @@ module MonadBrain (
   B, move,
 
   -- * Retrieving information
-  lastOpponentMove, slotAt, field, field', vitality, vitality',
+  lastOpponentMove, slotAt, field, field', vitality,
+  slots,
 
   -- * Converting to conventional brains
   toBrain,
 
   -- * Breakpoints
-  break, stepwise, alert
+  break, stepwise, alert, printState
 
   ) where
 
@@ -28,6 +29,7 @@ import Prelude hiding (break)
 import Data.Char
 import Data.IORef
 import Control.Applicative
+import Data.Traversable (for)
 import Control.Monad.Reader
 import Control.Monad.Free
 import qualified Data.Vector as V
@@ -78,17 +80,17 @@ slotAt i = asks ((V.! i) . proponent . snd)
 field :: SlotNr -> B Field
 field i = asks (Core.field . (V.! i) . proponent . snd)
 
--- | Look up the specified proponent's field.
+-- | Look up the specified opponent's field.
 field' :: SlotNr -> B Field
 field' i = asks (Core.field . (V.! i) . opponent . snd)
 
--- | Look up the specified proponent's vitality.
-vitality :: SlotNr -> B Vitality
-vitality i = asks (Core.vitality . (V.! i) . proponent . snd)
+-- | Look up the specified proponent/oponent's vitality.
+vitality :: SlotNr -> (Board -> V.Vector Slot) -> B Vitality
+vitality i sel = asks (Core.vitality . (V.! i) . sel . snd)
 
--- | Look up the specified opponent's vitality.
-vitality' :: SlotNr -> B Vitality
-vitality' i = asks (Core.vitality . (V.! i) . opponent . snd)
+-- | Returns all slots from proponent or opponent
+slots :: (Board -> V.Vector Slot) -> B (V.Vector Slot)
+slots sel = asks (sel . snd)
 
 -- | Convert a Brain monad computation to a conventional 'Brain'.
 toBrain :: B a -> Brain
@@ -138,6 +140,19 @@ stepwise b = do
             | otherwise                         -> prompt vActive
 
 -- | Alert a message to the console
+printState :: B ()
+printState = do
+  alert "Proponent:"
+  _ <- go proponent
+  alert "Opponent:"
+  _ <- go opponent
+  return ()
+  where
+    go sel = do
+      slts <- slots sel
+      for (zip [0..] (V.toList slts)) (alert . uncurry showIndexedSlot)
+
 alert :: MonadIO m => String -> m ()
-alert s = liftIO (hPutStrLn stderr s)
+alert "" = return ()
+alert s  = liftIO (hPutStrLn stderr s)
 
