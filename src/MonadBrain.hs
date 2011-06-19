@@ -9,7 +9,8 @@ module MonadBrain (
   B, move,
 
   -- * Retrieving information
-  lastOpponentMove, field, field', vitality, vitality',
+  lastOpponentMove, field, field', vitality,
+  slots,
 
   -- * Converting to conventional brains
   toBrain,
@@ -69,17 +70,13 @@ field i = asks (Core.field . (V.! i) . proponent . snd)
 field' :: SlotNr -> B Field
 field' i = asks (Core.field . (V.! i) . opponent . snd)
 
--- | Look up the specified proponent's vitality.
-vitality :: SlotNr -> B Vitality
-vitality i = asks (Core.vitality . (V.! i) . proponent . snd)
+-- | Look up the specified proponent/oponent's vitality.
+vitality :: SlotNr -> (Board -> V.Vector Slot) -> B Vitality
+vitality i sel = asks (Core.vitality . (V.! i) . sel . snd)
 
--- | Look up the specified opponent's vitality.
-vitality' :: SlotNr -> B Vitality
-vitality' i = asks (Core.vitality . (V.! i) . opponent . snd)
-
--- | Returns all slots from proponent
-slots :: B [V.Vector Slot]
-slots = asks (proponent . snd)
+-- | Returns all slots from proponent or opponent
+slots :: (Board -> V.Vector Slot) -> B (V.Vector Slot)
+slots sel = asks (sel . snd)
 
 -- | Convert a Brain monad computation to a conventional 'Brain'.
 toBrain :: B a -> Brain

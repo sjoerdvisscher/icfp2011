@@ -6,48 +6,83 @@ import Brain
 import MonadBrain
 import BUtils
 
-import Control.Monad (forever)
-import Data.Foldable
+import Control.Arrow
+import Control.Applicative
+import Control.Monad (forever, when)
+import Data.Maybe
+import Data.List
+import qualified Data.Vector as V
 import Prelude hiding (break)
 
 tomBrain :: Brain
 tomBrain = toBrain $ do
-  -- todo: pick random start slot
+  mm <- lastOpponentMove
+  when (isNothing mm) $ move nop
+
   -- Attack first
-  attack 255 0 5556 123
-  attack 254 0 5556 123
+  -- random
+  let attackSlot = 124
+  attack attackSlot 0 5556 123
+  attack attackSlot 0 5556 123
 
   -- break
-  -- todo: get their live slots, sorted by expression size / importantness
-  for_ [0,2..255] $ \i -> do
-    -- todo: get my live/empty slot, sorted by vitality
-    Put `applyCardToField` 253
-    253 `applyFieldToCard` Help
-    253 `applyInt` i
-    253 `applyInt` (i + 1)
-    K `applyCardToField` 253
-    S `applyCardToField` 253
+  forever $ do
 
-    -- todo: get my live/empty slot, sorted by vitality
-    load 10000 252
-    K `applyCardToField` 252
-    253 `apply` 252
+    (zombieSlot:_) <- free
+    zombieSlot `applyFieldToCard` Help
+    (opSlot1:_) <- interesting
+    zombieSlot `applyInt` opSlot1
+    (opSlot2:_) <- (\\ [opSlot1]) <$> interesting
+    zombieSlot `applyInt` opSlot2
+    K `applyCardToField` zombieSlot
+    S `applyCardToField` zombieSlot
+
+    (zombieArgSlot:_) <- (\\ [zombieSlot]) <$> free
+    v <- MonadBrain.vitality opSlot1 opponent
+    load v zombieArgSlot
+    K `applyCardToField` zombieArgSlot
+    zombieSlot `apply` zombieArgSlot
 
     -- alert "before zombie"
     -- break
 
     -- todo: get their dead slots
-    251 `applyFieldToCard` Zombie
-    251 `applyInt` if i == 0 then 0 else (255 - (i - 2))
-    251 `apply` 253
+    (zombieAttackSlot:_) <- (\\ [zombieSlot, zombieArgSlot]) <$> free
+    zombieAttackSlot `applyFieldToCard` Zombie
+    (opSlot3:_) <- deadSlots
+    zombieAttackSlot `applyInt` opSlot3
+    zombieAttackSlot `apply` zombieSlot
 
-    alert "after zombie"
+    -- alert "after zombie"
     -- break
 
-  -- todo: keep cycling ^ until opponent is dead, remove nops
-  forever (move nop)
+-- | Opponent's slots that are alive, sorted by size
+interesting :: B [SlotNr]
+interesting = do
+  slts <- slots opponent
+   -- shuffle
+  let ss = map snd . reverse . sort . (map . first $ size . Core.field)
+             $ zip (filter alive $ V.toList slts) [0 :: Int ..]
+  return $ ss ++ [0..] -- In case there's a bug, return everything
 
-interessting :: B [SlotNr]
-interessting = do
-  return $ [0..]
+-- | Dead's slots that are dead, with the biggest expresssion
+deadSlots :: B [SlotNr]
+deadSlots = do
+  slts <- slots proponent
+  let ss = map snd . reverse . sort . (map . first $ size . Core.field)
+             $ zip (filter dead $ V.toList slts) [0 :: Int ..]
+  return $ ss
+
+-- | Proponent's slots that are empty, sorted by vitality
+free :: B [SlotNr]
+free = do
+  slts <- slots proponent
+  let ss = map snd . reverse . sort . (map . first $ Core.vitality)
+             $ zip (filter (\s -> isI s && alive s)
+                           $ V.toList slts) [0 :: Int ..]
+  return $ ss
+  where
+    isI :: Slot -> Bool
+    isI (Slot (Card I) _) = True
+    isI _                 = False
 
