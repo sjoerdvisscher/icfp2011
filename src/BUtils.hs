@@ -1,7 +1,7 @@
 module BUtils (
 
   applyCardToField, applyFieldToCard,
-  fromI,
+  fromI, findSlot, availableSlot,
   load, copy, apply, applyInt, composeCard, attack
 
   ) where
@@ -25,6 +25,19 @@ fromI f i = do
     _      -> move (Move CardToField i Put)
   f i
 
+-- | Find a slot which matches the given predicate, and pass its slot number to the second argument.
+findSlot :: (Slot -> B Bool) -> (SlotNr -> B ()) -> B ()
+findSlot p f = go 255 where
+  go (-1) = return ()
+  go i = do
+    s <- slotAt i
+    b <- p s
+    if b then f i else go (i - 1)
+    
+-- | Find a slot that is empty and alive.
+availableSlot :: (SlotNr -> B ()) -> B ()
+availableSlot = findSlot (\(Slot f v) -> return $ v > 0 && f == Card I)
+    
 -- | Loads Int into a Slot
 load :: Int -> SlotNr -> B ()
 load n = fromI $ \slot ->
@@ -77,4 +90,3 @@ atVital f 256 = atVital f 0
 atVital f slot = do
   v <- vitality slot proponent
   if (v < 100) then atVital f (slot + 1) else f slot
-
