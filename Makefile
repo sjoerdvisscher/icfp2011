@@ -13,7 +13,7 @@ docs: configure
 opendocs: docs
 	open dist/doc/html/qltg/index.html
 
-build: configure
+build:
 	cabal build
 
 package: build

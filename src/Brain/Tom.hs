@@ -20,13 +20,10 @@ tomBrain = toBrain $ do
   mm <- lastOpponentMove
   when (isNothing mm) $ move nop
 
-  -- Attack first
-  -- random
-  attack 128 0 5556 123
-  attack 129 0 5556 123
-
   -- break
   forever $ do
+
+    reviveOne
 
     (zombieSlot:_) <- free
     zombieSlot `applyFieldToCard` Help
@@ -39,6 +36,8 @@ tomBrain = toBrain $ do
 
     --printState
     --break
+    reviveOne
+
     (zombieArgSlot:_) <- exclude [zombieSlot] <$> free
     v <- MonadBrain.vitality opSlot1 opponent
     load v zombieArgSlot
@@ -50,14 +49,27 @@ tomBrain = toBrain $ do
     -- break
 
     -- todo: get their dead slots
+    reviveOne
+
     frees <- free
-    --printState
-    --alert $ "free: " ++ show frees
-    -- break
+    frees3 <- exclude [zombieSlot, zombieArgSlot] <$> free
+    when (null frees3) $ do
+      printState
+      alert $ "free: " ++ show frees
+      break
     (zombieAttackSlot:_) <- exclude [zombieSlot, zombieArgSlot] <$> free
     zombieAttackSlot `applyFieldToCard` Zombie
-    (opSlot3:_) <- deadSlots
-    zombieAttackSlot `applyInt` (255 - opSlot3)
+
+    ds <- deadSlots
+    -- Attack first
+    -- random
+    if (null ds)
+      then do
+        attack 128 0 5556 123
+        attack 129 0 5556 123
+        zombieAttackSlot `applyInt` 0
+      else do
+        zombieAttackSlot `applyInt` (255 - head ds)
     zombieAttackSlot `apply` zombieSlot
     Put `applyCardToField` zombieSlot
 
@@ -66,6 +78,12 @@ tomBrain = toBrain $ do
 
 exclude :: [SlotNr] -> [SlotNr] -> [SlotNr]
 exclude blackList sluts = sluts \\ blackList
+
+reviveOne :: B ()
+reviveOne = availableSlot $ \slot -> do
+  findSlot (return . dead) $ \j -> do
+    slot `applyFieldToCard` Revive
+    applyInt slot j
 
 -- | Opponent's slots that are alive, sorted by size
 interesting :: B [SlotNr]
