@@ -38,9 +38,9 @@ play b1 b2 first debug = do
              when (True) $ hPutStrLn stderr $ report $ opponent board'
              when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
              when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board')
-        else if V.all dead (opponent board)
+        else if False && V.all dead (opponent board)
              then when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
-             else if V.all dead (proponent board)
+             else if False && V.all dead (proponent board)
                   then when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
                        when (debug) $ hPutStr stderr rp
