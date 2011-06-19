@@ -1,8 +1,11 @@
 module Core (
 
-  -- * Vital datatypes and functions
-  Board(..), Player, Slot(..), SlotNr, dead, alive,
+  -- * Vital datatypes
+  Board(..), Player, Slot(..), SlotNr,
   Vitality, Field(..), Card(..),
+
+  -- * Vital datatypes
+  dead, alive, size,
 
   -- * Constants
   emptyBoard, initialSlot, deadSlot,
@@ -124,4 +127,10 @@ initialSlot = Slot (Card I) 10000
 
 deadSlot :: Slot
 deadSlot = Slot (Card I) 0
+
+size :: Field -> Int
+size (Value _)       = 0
+size (Card _)        = 1
+size (Papp1 _ f)     = 1 + size f
+size (Papp2 _ f1 f2) = 1 + size f1 + size f2
 
