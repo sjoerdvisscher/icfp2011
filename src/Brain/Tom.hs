@@ -20,13 +20,15 @@ tomBrain = toBrain $ do
   -- break
   -- todo: get their live slots, sorted by expression size / importantness
   for_ [0,2..255] $ \i -> do
-    -- todo: get my live slots, sorted by vitality
+    -- todo: get my live/empty slot, sorted by vitality
     Put `applyCardToField` 253
     253 `applyFieldToCard` Help
     253 `applyInt` i
     253 `applyInt` (i + 1)
     K `applyCardToField` 253
     S `applyCardToField` 253
+
+    -- todo: get my live/empty slot, sorted by vitality
     load 10000 252
     K `applyCardToField` 252
     253 `apply` 252
@@ -42,6 +44,10 @@ tomBrain = toBrain $ do
     alert "after zombie"
     -- break
 
-  -- todo: keep cycling until opponent is dead
+  -- todo: keep cycling ^ until opponent is dead, remove nops
   forever (move nop)
+
+interessting :: B [SlotNr]
+interessting = do
+  return $ [0..]
 
