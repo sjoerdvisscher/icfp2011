@@ -25,6 +25,8 @@ import Logic
 import Brain
 
 import Prelude hiding (break)
+import Data.Char
+import Data.IORef
 import Control.Applicative
 import Control.Monad.Reader
 import Control.Monad.Free
@@ -105,4 +107,19 @@ break = liftIO $ do
 
 -- | Insert a breakpoints around every move in the given brain.
 stepwise :: B a -> B a
-stepwise = mapB (mapFreeT (break >>))
+stepwise b = do
+    vActive <- liftIO (newIORef True)
+    mapB (mapFreeT (prompt vActive >>)) b
+  where
+    prompt :: IORef Bool -> ReaderT (Maybe Move, Board) IO ()
+    prompt vActive = do
+      active <- liftIO (readIORef vActive)
+      when active $ do
+        response <- liftIO $ do
+          hPutStrLn stderr "Breakpoint hit -- [S]TEP/[c]ontinue?"
+          map toLower <$> getLine
+        case undefined of
+          _
+            | response `elem` ["", "s", "step"] -> return ()
+            | response `elem` ["c", "continue"] -> liftIO $ writeIORef vActive False
+            | otherwise                         -> prompt vActive
