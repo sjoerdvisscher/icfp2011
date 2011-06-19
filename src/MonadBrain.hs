@@ -35,12 +35,21 @@ import qualified Data.Vector as V
 import System.IO
 
 -- | The Brain monad.
-newtype B a = B (FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a)
-  deriving (Functor, Monad)
+newtype B a = B { runB :: FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a }
+  deriving (Functor)
 
 instance Applicative B where
   pure = return
   (<*>) = ap
+
+instance Monad B where
+  return = B . return
+  B x >>= f = B $ x >>= runB . f
+  fail s = do
+    alert "Fatal error: "
+    alert s
+    alert "Returning nops from now on"
+    forever (move nop)
 
 instance MonadIO B where
   liftIO = B . lift . liftIO
