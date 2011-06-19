@@ -131,7 +131,7 @@ f_attack = \i j n -> do
   put board'
   j' <- getSlotIndex j
   let opponentSlots = opponent board'
-  opponentSlots' <- change (255 - j') (add board' ((-n') * 9 `div` 10)) opponentSlots
+  opponentSlots' <- change (255 - j') (add board' ((-n') * 9 `quot` 10)) opponentSlots
   put $ board' { opponent = opponentSlots' }
   return $ Card I
 
@@ -152,7 +152,7 @@ f_help = \i j n -> do
   let board' = board { proponent = proponentSlots' }
   put board'
   j' <- getSlotIndex j
-  proponentSlots'' <- change j' (add board' (n' * 11 `div` 10)) proponentSlots'
+  proponentSlots'' <- change j' (add board' (n' * 11 `quot` 10)) proponentSlots'
   put $ board' { proponent = proponentSlots'' }
   return $ Card I
 
