@@ -38,7 +38,7 @@ tomBrain = toBrain $ do
     -- break
 
     251 `applyFieldToCard` Zombie
-    251 `applyInt` 0
+    251 `applyInt` if i == 0 then 0 else (255 - (i - 2))
     251 `apply` 253
 
     -- alert "after zombie"
