@@ -105,7 +105,7 @@ deadSlots = do
 free :: B [SlotNr]
 free = do
   slts <- slots proponent
-  let ss = map snd . reverse . sortBy (comparing fst) . reverse . (map . first $ Core.vitality)
+  let ss = map snd . sortBy cmp . (map . first $ Core.vitality)
              $ filter (\(s,_) -> isI s && alive s) $ zip (V.toList slts) [0 :: Int ..]
   return $ ss
   where
@@ -113,3 +113,12 @@ free = do
     isI (Slot (Card I) _) = True
     isI _                 = False
 
+cmp :: Ord a => (a, Int) -> (a, Int) -> Ordering
+cmp (a, i) (b, j)
+  | a == b    = intMoves i `compare` intMoves j
+  | otherwise = b `compare` a
+
+intMoves :: Int -> Int
+intMoves n | n == 0    = 1
+           | odd n     = 1 + intMoves (n - 1)
+           | otherwise = 1 + intMoves (n `div` 2)
