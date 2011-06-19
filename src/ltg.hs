@@ -6,10 +6,10 @@ import Brain
 import Brain.Loop
 import Brain.Mirror
 import Brain.Nop
-import Brain.NopReturn
 import Brain.Stdin
 import Brain.Tom
 import Brain.Sjoerd
+import Brain.Submitted
 
 import Control.Applicative
 import Control.Monad.Error
@@ -72,13 +72,13 @@ main = do
 
 brains :: [(String, Brain)]
 brains =
-  [ ("nop",    nopBrain)
-  , ("nopret", nopReturnBrain)
-  , ("stdin",  stdinBrain)
-  , ("mirror", mirrorBrain)
-  , ("loop",   loopBrain)
-  , ("tom",    tomBrain)
-  , ("sjoerd", sjoerdBrain)
+  [ ("nop",       nopBrain)
+  , ("stdin",     stdinBrain)
+  , ("mirror",    mirrorBrain)
+  , ("loop",      loopBrain)
+  , ("tom",       tomBrain)
+  , ("sjoerd",    sjoerdBrain)
+  , ("submitted", submittedBrain)
   ]
 
 report :: V.Vector Slot -> String
