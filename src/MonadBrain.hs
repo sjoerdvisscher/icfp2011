@@ -15,7 +15,7 @@ module MonadBrain (
   toBrain,
 
   -- * Breakpoints
-  break, stepwise
+  break, stepwise, alert
 
   ) where
 
@@ -123,3 +123,8 @@ stepwise b = do
             | response `elem` ["", "s", "step"] -> return ()
             | response `elem` ["c", "continue"] -> liftIO $ writeIORef vActive False
             | otherwise                         -> prompt vActive
+
+-- | Alert a message to the console
+alert :: MonadIO m => String -> m ()
+alert s = liftIO (hPutStrLn stderr s)
+

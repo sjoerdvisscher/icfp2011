@@ -7,23 +7,20 @@ import MonadBrain
 import BUtils
 
 import Control.Monad (forever)
-import Control.Monad.IO.Class
 import Data.Foldable
 import Prelude hiding (break)
-import System.IO
 
 tomBrain :: Brain
 tomBrain = toBrain $ do
-  -- for_ [255,253..1] $ \i -> do
-  --   attack i       (i `div` 2 + 128) 5556 123
-  --   attack (i + 1) (i `div` 2 + 128) 5556 123
-
+  -- todo: pick random start slot
   -- Attack first
   attack 255 0 5556 123
   attack 254 0 5556 123
 
   -- break
+  -- todo: get their live slots, sorted by expression size / importantness
   for_ [0,2..255] $ \i -> do
+    -- todo: get my live slots, sorted by vitality
     Put `applyCardToField` 253
     253 `applyFieldToCard` Help
     253 `applyInt` i
@@ -37,20 +34,14 @@ tomBrain = toBrain $ do
     -- alert "before zombie"
     -- break
 
+    -- todo: get their dead slots
     251 `applyFieldToCard` Zombie
     251 `applyInt` if i == 0 then 0 else (255 - (i - 2))
     251 `apply` 253
 
-    -- alert "after zombie"
+    alert "after zombie"
     -- break
 
-  -- for_ [255,252..0] $ \i -> do
-  --   attack i       (128 - (i `div` 3)) 3705 123
-  --   attack (i + 1) (128 - (i `div` 3)) 3705 123
-  --   attack (i + 2) (128 - (i `div` 3)) 3705 123
-
+  -- todo: keep cycling until opponent is dead
   forever (move nop)
-
-alert :: MonadIO m => String -> m ()
-alert s = liftIO (hPutStrLn stderr s)
 
