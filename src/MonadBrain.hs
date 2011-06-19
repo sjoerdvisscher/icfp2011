@@ -16,7 +16,7 @@ module MonadBrain (
   toBrain,
 
   -- * Breakpoints
-  break, stepwise, alert
+  break, stepwise, alert, printState
 
   ) where
 
@@ -29,6 +29,7 @@ import Prelude hiding (break)
 import Data.Char
 import Data.IORef
 import Control.Applicative
+import Data.Traversable (for)
 import Control.Monad.Reader
 import Control.Monad.Free
 import qualified Data.Vector as V
@@ -36,12 +37,21 @@ import qualified Data.Vector as V
 import System.IO
 
 -- | The Brain monad.
-newtype B a = B (FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a)
-  deriving (Functor, Monad)
+newtype B a = B { runB :: FreeT ((,) Move) (ReaderT (Maybe Move, Board) IO) a }
+  deriving (Functor)
 
 instance Applicative B where
   pure = return
   (<*>) = ap
+
+instance Monad B where
+  return = B . return
+  B x >>= f = B $ x >>= runB . f
+  fail s = do
+    alert "Fatal error: "
+    alert s
+    alert "Returning nops from now on"
+    forever (move nop)
 
 instance MonadIO B where
   liftIO = B . lift . liftIO
@@ -130,6 +140,19 @@ stepwise b = do
             | otherwise                         -> prompt vActive
 
 -- | Alert a message to the console
+printState :: B ()
+printState = do
+  alert "Proponent:"
+  _ <- go proponent
+  alert "Opponent:"
+  _ <- go opponent
+  return ()
+  where
+    go sel = do
+      slts <- slots sel
+      for (zip [0..] (V.toList slts)) (alert . uncurry showIndexedSlot)
+
 alert :: MonadIO m => String -> m ()
-alert s = liftIO (hPutStrLn stderr s)
+alert "" = return ()
+alert s  = liftIO (hPutStrLn stderr s)
 

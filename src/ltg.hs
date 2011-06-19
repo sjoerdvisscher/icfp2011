@@ -82,10 +82,8 @@ brains =
   ]
 
 report :: V.Vector Slot -> String
-report slots = concatMap pr (zip (V.toList slots) [0 :: Int ..])
-  where
-    pr (Slot (Card I) 10000, _) = ""
-    pr (slot, i)                = "[" ++ show i ++ "] " ++ show slot ++ "\n"
+report slots = concatMap (uncurry showIndexedSlot)
+                         (zip [0..] (V.toList slots))
 
 writeMove :: Move -> IO ()
 writeMove (Move CardToField i c) = do

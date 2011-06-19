@@ -11,7 +11,10 @@ module Core (
   emptyBoard, initialSlot, deadSlot,
 
   -- * The Result monad
-  Result
+  Result,
+
+  -- * Helper functions
+  showIndexedSlot
 
   ) where
 
@@ -34,6 +37,11 @@ data Slot = Slot { field :: Field, vitality :: Vitality }
 
 instance Show Slot where
   show (Slot f v) = show f ++ "   {" ++ show v ++ "}"
+
+showIndexedSlot :: Int -> Slot -> String
+showIndexedSlot _ (Slot (Card I) 10000) = ""
+showIndexedSlot i slot                  = "[" ++ show i ++ "] "
+                                          ++ show slot
 
 -- | Index of slot between 0 and 255
 type SlotNr = Int
