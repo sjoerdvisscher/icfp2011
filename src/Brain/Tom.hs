@@ -65,19 +65,12 @@ tomBrain = toBrain $ do
     -- random
     if (null ds)
       then do
-        --attack 128 0 5556 123
-        --attack 129 0 5556 123
         slot <- doAttack
         zombieAttackSlot `applyInt` slot
       else do
         zombieAttackSlot `applyInt` (255 - head ds)
     zombieAttackSlot `apply` zombieSlot
     Put `applyCardToField` zombieSlot
-
-    printState
-    slts <- doAttack
-    alert $ "To attack: " ++ show slts
-    break
 
     -- alert "after zombie"
     -- break
@@ -119,8 +112,8 @@ free = do
 doAttack :: B SlotNr
 doAttack = do
   opSlots <- slots opponent
-  let ss = map snd . sortBy cmp . (map . first $ Core.vitality)
-             $ filter (alive . fst) $ zip (V.toList opSlots) [255,254..]
+  let ss = map snd . sortBy cmp . (map . first $ Core.vitality &&& size . Core.field)
+             $ zip (V.toList opSlots) [255,254..]
   (s:_) <- return ss
   let opSlot = opSlots V.! (255 - s)
   let v = Core.vitality opSlot
