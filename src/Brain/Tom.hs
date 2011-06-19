@@ -65,13 +65,19 @@ tomBrain = toBrain $ do
     -- random
     if (null ds)
       then do
-        attack 128 0 5556 123
-        attack 129 0 5556 123
-        zombieAttackSlot `applyInt` 0
+        --attack 128 0 5556 123
+        --attack 129 0 5556 123
+        slot <- doAttack
+        zombieAttackSlot `applyInt` slot
       else do
         zombieAttackSlot `applyInt` (255 - head ds)
     zombieAttackSlot `apply` zombieSlot
     Put `applyCardToField` zombieSlot
+
+    printState
+    slts <- doAttack
+    alert $ "To attack: " ++ show slts
+    break
 
     -- alert "after zombie"
     -- break
@@ -105,18 +111,39 @@ deadSlots = do
 free :: B [SlotNr]
 free = do
   slts <- slots proponent
-  let ss = map snd . sortBy cmp . (map . first $ Core.vitality)
+  let ss = map snd . sortBy cmpInv . (map . first $ Core.vitality)
              $ filter (\(s,_) -> isI s && alive s) $ zip (V.toList slts) [0 :: Int ..]
   return $ ss
-  where
-    isI :: Slot -> Bool
-    isI (Slot (Card I) _) = True
-    isI _                 = False
+
+-- | Proponent's slots that are needed for an attack on opponent slot
+doAttack :: B SlotNr
+doAttack = do
+  opSlots <- slots opponent
+  let ss = map snd . sortBy cmp . (map . first $ Core.vitality)
+             $ filter (alive . fst) $ zip (V.toList opSlots) [255,254..]
+  (s:_) <- return ss
+  let opSlot = opSlots V.! (255 - s)
+  let v = Core.vitality opSlot
+  if v == 0
+    then return s
+    else do
+      (p:q:_) <- free
+      attack p s (min v 5000 * 10 `div` 9 + 1) q
+      doAttack
+
+isI :: Slot -> Bool
+isI (Slot (Card I) _) = True
+isI _                 = False
+
+cmpInv :: Ord a => (a, Int) -> (a, Int) -> Ordering
+cmpInv (a, i) (b, j)
+  | a == b    = intMoves i `compare` intMoves j
+  | otherwise = b `compare` a
 
 cmp :: Ord a => (a, Int) -> (a, Int) -> Ordering
 cmp (a, i) (b, j)
   | a == b    = intMoves i `compare` intMoves j
-  | otherwise = b `compare` a
+  | otherwise = a `compare` b
 
 intMoves :: Int -> Int
 intMoves n | n == 0    = 1
