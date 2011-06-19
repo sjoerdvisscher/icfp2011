@@ -44,6 +44,7 @@ data Field
   | Card Card
   | Papp1 Card Field
   | Papp2 Card Field Field
+  deriving Eq
 
 instance Show Field where
   show (Value x)     = show x
@@ -68,6 +69,7 @@ data Card
   | Copy
   | Revive
   | Zombie
+  deriving Eq
 
 instance Show Card where
   show I      = "I"
