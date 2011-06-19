@@ -10,9 +10,10 @@ import Control.Arrow
 import Control.Applicative
 import Control.Monad (forever, when)
 import Data.Maybe
-import Data.List
+import Data.List (sort, (\\), sortBy)
 import qualified Data.Vector as V
 import Prelude hiding (break)
+import Data.Ord
 
 tomBrain :: Brain
 tomBrain = toBrain $ do
@@ -61,25 +62,24 @@ interesting :: B [SlotNr]
 interesting = do
   slts <- slots opponent
    -- shuffle
-  let ss = map snd . reverse . sort . (map . first $ size . Core.field)
-             $ zip (filter alive $ V.toList slts) [0 :: Int ..]
+  let ss = map snd . reverse . sortBy (comparing fst) . reverse . (map . first $ size . Core.field)
+             $ filter (alive . fst) $ zip (V.toList slts) [0 :: Int ..]
   return $ ss ++ [0..] -- In case there's a bug, return everything
 
 -- | Dead's slots that are dead, with the biggest expresssion
 deadSlots :: B [SlotNr]
 deadSlots = do
-  slts <- slots proponent
+  slts <- slots opponent
   let ss = map snd . reverse . sort . (map . first $ size . Core.field)
-             $ zip (filter dead $ V.toList slts) [0 :: Int ..]
+             $ filter (dead . fst) $ zip (V.toList slts) [0 :: Int ..]
   return $ ss
 
 -- | Proponent's slots that are empty, sorted by vitality
 free :: B [SlotNr]
 free = do
   slts <- slots proponent
-  let ss = map snd . reverse . sort . (map . first $ Core.vitality)
-             $ zip (filter (\s -> isI s && alive s)
-                           $ V.toList slts) [0 :: Int ..]
+  let ss = map snd . reverse . sortBy (comparing fst) . reverse . (map . first $ Core.vitality)
+             $ filter (\(s,_) -> isI s && alive s) $ zip (V.toList slts) [0 :: Int ..]
   return $ ss
   where
     isI :: Slot -> Bool
