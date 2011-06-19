@@ -119,10 +119,16 @@ doAttack = do
   let v = Core.vitality opSlot
   if v == 0
     then return s
-    else do
-      (p:q:_) <- free
-      attack p s (min v 5000 * 10 `div` 9 + 1) q
-      doAttack
+    else if v == 1
+         then do
+           (p:_) <- free
+           p `applyFieldToCard` Dec
+           p `applyInt` s
+           doAttack
+         else do
+           (p:q:_) <- free
+           attack p s (min v 5000 * 10 `div` 9 + 1) q
+           doAttack
 
 isI :: Slot -> Bool
 isI (Slot (Card I) _) = True
