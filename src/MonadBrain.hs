@@ -9,7 +9,7 @@ module MonadBrain (
   B, move,
 
   -- * Retrieving information
-  lastOpponentMove, field, field', vitality, vitality',
+  lastOpponentMove, slotAt, field, field', vitality, vitality',
 
   -- * Converting to conventional brains
   toBrain,
@@ -60,6 +60,10 @@ move m = B $ wrap (m, return ())
 -- | Fetch the opponent's last move, if any.
 lastOpponentMove :: B (Maybe Move)
 lastOpponentMove = asks fst
+
+-- | Look up the specified proponent's slot.
+slotAt :: SlotNr -> B Slot
+slotAt i = asks ((V.! i) . proponent . snd)
 
 -- | Look up the specified proponent's field.
 field :: SlotNr -> B Field
