@@ -38,9 +38,9 @@ play b1 b2 first debug = do
              when (True) $ hPutStrLn stderr $ report $ opponent board'
              when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " has: " ++ show (score $ proponent board')
              when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " has: " ++ show (score $ opponent board')
-        else if V.all dead (opponent board)
+        else if False && V.all dead (opponent board)
              then when (True) $ hPutStrLn stderr $ "Player #" ++ show (ply `rem` 2) ++ " won!"
-             else if V.all dead (proponent board)
+             else if False && V.all dead (proponent board)
                   then when (True) $ hPutStrLn stderr $ "Player #" ++ show (1 - (ply `rem` 2)) ++ " won!"
                   else do
                        when (debug) $ hPutStr stderr rp
@@ -61,8 +61,8 @@ main = do
   case map (`eitherLookup` brains) args of
     []                   -> hPutStrLn stderr "Reading moves for both players from stdin." >>
                             play stdinBrain  stdinBrain  True  True
-    [Left "0"]           -> play tomBrain    stdinBrain  True  False
-    [Left "1"]           -> play stdinBrain  tomBrain    False False
+    [Left "0"]           -> play sjoerdBrain stdinBrain  True  False
+    [Left "1"]           -> play stdinBrain  sjoerdBrain False False
     [Right b1, Right b2] -> play b1          b2          True  False
     _                    -> do
       hPutStrLn stderr "Usage: ltg <brain> <brain>"
