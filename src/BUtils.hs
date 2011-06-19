@@ -87,6 +87,8 @@ attack i j n slotInit = atVital attack' slotInit
 -- | Run a function at a vital slot, given a start slot.
 atVital :: (SlotNr -> B a) -> SlotNr -> B a
 atVital f 256 = atVital f 0
-atVital f slot = do
-  v <- vitality slot proponent
-  if (v < 100) then atVital f (slot + 1) else f slot
+atVital f slot = go 0 where
+  go 256 = f slot
+  go n = let slot' = (slot + n) `mod` 255 in do
+    v <- vitality slot' proponent
+    if (v < 100) then go (n + 1) else f slot'
