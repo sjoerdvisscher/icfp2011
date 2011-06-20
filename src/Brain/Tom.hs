@@ -20,7 +20,6 @@ tomBrain = toBrain $ do
   mm <- lastOpponentMove
   when (isNothing mm) $ move nop
 
-  -- break
   forever $ do
 
     reviveOne
@@ -34,8 +33,6 @@ tomBrain = toBrain $ do
     K `applyCardToField` zombieSlot
     S `applyCardToField` zombieSlot
 
-    --printState
-    --break
     reviveOne
 
     (zombieArgSlot:_) <- exclude [zombieSlot] <$> free
@@ -45,24 +42,18 @@ tomBrain = toBrain $ do
     zombieSlot `apply` zombieArgSlot
     Put `applyCardToField` zombieArgSlot
 
-    -- alert "before zombie"
-    -- break
-
-    -- todo: get their dead slots
     reviveOne
 
-    frees <- free
-    frees3 <- exclude [zombieSlot, zombieArgSlot] <$> free
-    when (null frees3) $ do
+    freeSlots <- exclude [zombieSlot, zombieArgSlot] <$> free
+    when (null feeSlots) $ do
       printState
-      alert $ "free: " ++ show frees
+      allFree <- free
+      alert $ "free: " ++ show allFrees
       break
     (zombieAttackSlot:_) <- exclude [zombieSlot, zombieArgSlot] <$> free
     zombieAttackSlot `applyFieldToCard` Zombie
 
     ds <- deadSlots
-    -- Attack first
-    -- random
     if (null ds)
       then do
         slot <- doAttack
@@ -71,9 +62,6 @@ tomBrain = toBrain $ do
         zombieAttackSlot `applyInt` (255 - head ds)
     zombieAttackSlot `apply` zombieSlot
     Put `applyCardToField` zombieSlot
-
-    -- alert "after zombie"
-    -- break
 
 exclude :: [SlotNr] -> [SlotNr] -> [SlotNr]
 exclude blackList sluts = sluts \\ blackList
@@ -92,7 +80,7 @@ interesting = do
              $ filter (alive . fst) $ zip (V.toList slts) [0 :: Int ..]
   return $ ss ++ [0..255] -- In case there's a bug, return everything
 
--- | Dead's slots that are dead, with the biggest expresssion
+-- | Opponent's slots that are dead, with the biggest expresssion
 deadSlots :: B [SlotNr]
 deadSlots = do
   slts <- slots opponent
@@ -108,7 +96,7 @@ free = do
              $ filter (\(s,_) -> isI s && alive s) $ zip (V.toList slts) [0 :: Int ..]
   return $ ss
 
--- | Proponent's slots that are needed for an attack on opponent slot
+-- | Attack the opponent's weakest slot, return the slot number of a dead slot
 doAttack :: B SlotNr
 doAttack = do
   opSlots <- slots opponent
