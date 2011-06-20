@@ -130,7 +130,7 @@ doAttack = do
            proSlots <- slots proponent
            let proSlot = proSlots V.! p
            let v' = Core.vitality proSlot
-           attack p s (minimum [v * 10 `div` 9 + 1, v', 5556]) q
+           attack p s (minimum [v * 10 `div` 9 + 1, v' - 1, 5556]) q
            doAttack
 
 isI :: Slot -> Bool
