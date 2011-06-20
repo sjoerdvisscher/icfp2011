@@ -3,8 +3,9 @@ Lambda: The Gathering submission by Magic Missiles
 
 Submission to the 2011 ICFP Contest.
 
-Our strategy is in [Brain/Submitted.hs](blob/master/src/Brain/Submitted.hs), it
-is relatively straightforward:
+Our strategy is in
+[Brain/Submitted.hs](icfp2011/blob/master/src/Brain/Submitted.hs), it is
+relatively straightforward:
 
 In a loop:
 
